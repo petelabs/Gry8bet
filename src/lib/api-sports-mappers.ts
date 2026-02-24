@@ -1,4 +1,5 @@
 import type { Match, Team, ApiSportsFixture } from './types';
+import { format } from 'date-fns';
 
 export function mapApiFixtureToMatch(apiFixture: ApiSportsFixture): Match {
   const homeTeam: Team = {
@@ -13,8 +14,11 @@ export function mapApiFixtureToMatch(apiFixture: ApiSportsFixture): Match {
     logoImageHint: 'team logo',
   };
 
+  const kickOffDate = new Date(apiFixture.fixture.date);
+
   return {
     id: apiFixture.fixture.id.toString(),
+    date: format(kickOffDate, 'yyyy-MM-dd'),
     homeTeam,
     awayTeam,
     kickOff: apiFixture.fixture.date,

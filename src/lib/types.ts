@@ -6,6 +6,7 @@ export type Team = {
 
 export type Match = {
   id: string;
+  date: string; // The date of the match in 'yyyy-MM-dd' format
   homeTeam: Team;
   awayTeam: Team;
   kickOff: string; // ISO string

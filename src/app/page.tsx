@@ -10,7 +10,7 @@ import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { endOfDay } from 'date-fns';
+import { format as formatDate } from 'date-fns';
 
 const SYNC_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
@@ -19,6 +19,14 @@ export default function Home() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isSyncing, setIsSyncing] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+     useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000); // Update time every minute
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         if (isUserLoading || !user || !firestore) {
@@ -81,18 +89,22 @@ export default function Home() {
 
     const matchesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        // Fetch matches from the current time until the end of today.
-        // This ensures already played matches are not shown.
-        const now = new Date();
-        const todayEnd = endOfDay(new Date());
+        // Fetch all matches for today
+        const today = formatDate(new Date(), 'yyyy-MM-dd');
         return query(
             collection(firestore, 'matches'),
-            where('kickOff', '>=', now.toISOString()),
-            where('kickOff', '<=', todayEnd.toISOString())
+            where('date', '==', today)
         );
     }, [firestore]);
 
-    const { data: matches, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
+    const { data: allTodayMatches, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
+
+    const upcomingMatches = useMemo(() => {
+        if (!allTodayMatches) return null;
+        // Filter out matches that have already started, based on the current time which updates every minute
+        return allTodayMatches.filter(match => new Date(match.kickOff) >= currentTime);
+    }, [allTodayMatches, currentTime]);
+
 
     if (matchesError) {
          return (
@@ -121,7 +133,7 @@ export default function Home() {
         );
     }
     
-    if (!matches || matches.length === 0) {
+    if (!upcomingMatches || upcomingMatches.length === 0) {
         return (
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
@@ -132,11 +144,11 @@ export default function Home() {
         );
     }
 
-    const leagues = [...new Set(matches.map(match => match.league))].sort();
+    const leagues = [...new Set(upcomingMatches.map(match => match.league))].sort();
 
     return (
         <div className="container py-6 sm:py-8">
-        <MatchList matches={matches} leagues={leagues} />
+        <MatchList matches={upcomingMatches} leagues={leagues} />
         </div>
     );
 }
