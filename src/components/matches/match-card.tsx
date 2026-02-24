@@ -24,8 +24,15 @@ export function MatchCard({ match }: MatchCardProps) {
     setKickOffTime(format(kickOffDate, 'HH:mm'));
     setKickOffDay(format(kickOffDate, 'MMM d'));
 
-    // Logic for live status simulation
-    const matchEndTime = addMinutes(kickOffDate, 115); // Approx. match duration
+    // Generate a consistent, pseudo-random duration for each match based on its ID.
+    // This avoids using Math.random() directly, which can cause issues between server and client rendering.
+    const matchIdNum1 = parseInt(match.id.slice(-1), 10) || 0;
+    const matchIdNum2 = parseInt(match.id.slice(-2, -1), 10) || 3;
+    
+    const firstHalfAdded = 4 + (matchIdNum1 % 3); // Consistent 4-6 mins
+    const secondHalfAdded = 5 + (matchIdNum2 % 6); // Consistent 5-10 mins
+    const totalDuration = 90 + 15 + firstHalfAdded + secondHalfAdded; // Includes 15 min half-time
+    const matchEndTime = addMinutes(kickOffDate, totalDuration);
 
     const checkLiveStatus = () => {
       const now = new Date();
@@ -40,7 +47,7 @@ export function MatchCard({ match }: MatchCardProps) {
     const interval = setInterval(checkLiveStatus, 60000); // Check every minute
 
     return () => clearInterval(interval); // Cleanup on unmount
-  }, [match.kickOff]);
+  }, [match.kickOff, match.id]);
 
   return (
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">

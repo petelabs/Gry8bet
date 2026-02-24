@@ -37,7 +37,16 @@ export default function MatchPage() {
     if (!match) return;
 
     const kickOffDate = new Date(match.kickOff);
-    const matchEndTime = addMinutes(kickOffDate, 115); // Approx. match duration
+    
+    // Generate a consistent, pseudo-random duration for each match based on its ID.
+    // This avoids using Math.random() directly, which can cause issues between server and client rendering.
+    const matchIdNum1 = parseInt(match.id.slice(-1), 10) || 0;
+    const matchIdNum2 = parseInt(match.id.slice(-2, -1), 10) || 3;
+    
+    const firstHalfAdded = 4 + (matchIdNum1 % 3); // Consistent 4-6 mins
+    const secondHalfAdded = 5 + (matchIdNum2 % 6); // Consistent 5-10 mins
+    const totalDuration = 90 + 15 + firstHalfAdded + secondHalfAdded; // Includes 15 min half-time
+    const matchEndTime = addMinutes(kickOffDate, totalDuration);
 
     const checkLiveStatus = () => {
       const now = new Date();
