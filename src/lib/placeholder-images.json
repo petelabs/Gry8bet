@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "team_logo_1",
+      "description": "Team logo 1",
+      "imageUrl": "https://images.unsplash.com/photo-1632937925343-d8d581769c8a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_2",
+      "description": "Team logo 2",
+      "imageUrl": "https://images.unsplash.com/photo-1632937925343-d8d581769c8a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_3",
+      "description": "Team logo 3",
+      "imageUrl": "https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_4",
+      "description": "Team logo 4",
+      "imageUrl": "https://images.unsplash.com/photo-1761942943074-45eaf3ced2cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_5",
+      "description": "Team logo 5",
+      "imageUrl": "https://images.unsplash.com/photo-1764901797362-4a8e22b5ef55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_6",
+      "description": "Team logo 6",
+      "imageUrl": "https://images.unsplash.com/photo-1764390127736-daed27d1f5c7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_7",
+      "description": "Team logo 7",
+      "imageUrl": "https://images.unsplash.com/photo-1625392085233-3f10b25fac1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8dGVhbSUyMGxvZ298ZW58MHx8fHwxNzcxODcyMzY1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    },
+    {
+      "id": "team_logo_8",
+      "description": "Team logo 8",
+      "imageUrl": "https://images.unsplash.com/photo-1764901797362-4a8e22b5ef55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0ZWFtJTIwbG9nb3xlbnwwfHx8fDE3NzE4NzIzNjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team logo"
+    }
+  ]
 }
