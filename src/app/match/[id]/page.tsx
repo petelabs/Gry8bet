@@ -3,10 +3,10 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, Shield, Trophy } from 'lucide-react';
+import { Calendar, Clock, MapPin, Shield, Trophy, Percent } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { AIInsight } from '@/components/matches/ai-insight';
+import { cn } from '@/lib/utils';
 
 type MatchPageProps = {
   params: {
@@ -37,14 +37,10 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   const kickOffDate = new Date(match.kickOff);
   
-  const getConfidenceVariant = (confidence: 'High' | 'Medium' | 'Low'): 'default' | 'secondary' | 'destructive' => {
-      switch (confidence) {
-          case 'High': return 'default';
-          case 'Medium': return 'secondary';
-          case 'Low': return 'destructive';
-          default: return 'secondary';
-      }
-  }
+  const probabilityColor = 
+    match.prediction.confidence === 'High' ? 'text-chart-2' :
+    match.prediction.confidence === 'Medium' ? 'text-chart-4' :
+    'text-chart-1';
 
   return (
     <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
@@ -113,10 +109,14 @@ export default function MatchPage({ params }: MatchPageProps) {
                     </div>
                     <Separator />
                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">Confidence</span>
-                        <Badge variant={getConfidenceVariant(match.prediction.confidence)} className="text-sm">
-                            {match.prediction.confidence}
-                        </Badge>
+                        <span className="font-semibold">Win Rate</span>
+                         <div className="flex items-center gap-2">
+                            <Percent className="h-4 w-4 text-muted-foreground" />
+                            <span className={cn("font-bold text-lg", probabilityColor)}>
+                                {(match.prediction.winProbability * 100).toFixed(0)}%
+                            </span>
+                            <span className="text-sm text-muted-foreground">({match.prediction.confidence} confidence)</span>
+                        </div>
                     </div>
                     <Separator />
                     <div>

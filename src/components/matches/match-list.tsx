@@ -15,6 +15,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Checkbox } from '../ui/checkbox';
+import { Label } from '../ui/label';
 
 interface MatchListProps {
   matches: Match[];
@@ -24,6 +26,7 @@ interface MatchListProps {
 export function MatchList({ matches, leagues }: MatchListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('all');
+  const [highConfidenceOnly, setHighConfidenceOnly] = useState(false);
 
   const filteredMatches = useMemo(() => {
     return matches.filter(match => {
@@ -31,9 +34,38 @@ export function MatchList({ matches, leagues }: MatchListProps) {
         match.homeTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         match.awayTeam.name.toLowerCase().includes(searchTerm.toLowerCase());
       const leagueFilter = selectedLeague === 'all' || match.league === selectedLeague;
-      return teamSearch && leagueFilter;
+      const confidenceFilter = !highConfidenceOnly || match.prediction.confidence === 'High';
+      return teamSearch && leagueFilter && confidenceFilter;
     }).sort((a, b) => new Date(a.kickOff).getTime() - new Date(b.kickOff).getTime());
-  }, [matches, searchTerm, selectedLeague]);
+  }, [matches, searchTerm, selectedLeague, highConfidenceOnly]);
+
+  const FilterControls = () => (
+    <div className="grid gap-4">
+        <div>
+            <Label className="text-sm font-semibold" htmlFor="league-filter">League</Label>
+            <Select onValueChange={setSelectedLeague} defaultValue={selectedLeague}>
+                <SelectTrigger id="league-filter" className="mt-1">
+                    <SelectValue placeholder="Filter by league" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">All Leagues</SelectItem>
+                    {leagues.map(league => (
+                    <SelectItem key={league} value={league}>{league}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+            <Checkbox id="high-confidence-filter" checked={highConfidenceOnly} onCheckedChange={(checked) => setHighConfidenceOnly(!!checked)} />
+            <Label htmlFor="high-confidence-filter" className="text-sm font-normal">
+                High-Confidence Picks Only
+            </Label>
+        </div>
+        <p className="text-xs text-muted-foreground -mt-2">
+            Note: 100% win is not guaranteed.
+        </p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -48,9 +80,9 @@ export function MatchList({ matches, leagues }: MatchListProps) {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="hidden sm:block">
+        <div className="hidden md:flex gap-4">
             <Select onValueChange={setSelectedLeague} defaultValue="all">
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Filter by league" />
                 </SelectTrigger>
                 <SelectContent>
@@ -60,35 +92,30 @@ export function MatchList({ matches, leagues }: MatchListProps) {
                     ))}
                 </SelectContent>
             </Select>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="high-confidence-desktop" checked={highConfidenceOnly} onCheckedChange={(checked) => setHighConfidenceOnly(!!checked)} />
+                <Label htmlFor="high-confidence-desktop" className="text-sm font-normal whitespace-nowrap">
+                    High-Confidence Only
+                </Label>
+            </div>
         </div>
-        <div className="sm:hidden">
+        <div className="md:hidden">
              <Sheet>
                 <SheetTrigger asChild>
                     <Button variant="outline" className="w-full">
                         <SlidersHorizontal className="mr-2 h-4 w-4" />
-                        Filters
+                        Filter Matches
                     </Button>
                 </SheetTrigger>
                 <SheetContent>
                     <SheetHeader>
                         <SheetTitle>Filters</SheetTitle>
                         <SheetDescription>
-                            Filter the matches to find what you're looking for.
+                            Find the matches you're looking for.
                         </SheetDescription>
                     </SheetHeader>
-                    <div className="grid gap-4 py-4">
-                        <h3 className="font-semibold text-sm">League</h3>
-                        <Select onValueChange={setSelectedLeague} defaultValue="all">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Filter by league" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Leagues</SelectItem>
-                                {leagues.map(league => (
-                                <SelectItem key={league} value={league}>{league}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="py-4">
+                        <FilterControls />
                     </div>
                 </SheetContent>
             </Sheet>

@@ -3,6 +3,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/header';
 import { Toaster } from "@/components/ui/toaster"
+import { ProPlanProvider } from '@/hooks/use-pro-plan';
 
 export const metadata: Metadata = {
   title: 'FootyForecast',
@@ -22,9 +23,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen flex flex-col")}>
-        <Header />
-        <main className="flex-1 flex flex-col">{children}</main>
-        <Toaster />
+        <ProPlanProvider>
+            <Header />
+            <main className="flex-1 flex flex-col">{children}</main>
+            <Toaster />
+        </ProPlanProvider>
       </body>
     </html>
   );

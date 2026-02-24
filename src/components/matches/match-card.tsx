@@ -3,8 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Calendar, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MatchCardProps {
   match: Match;
@@ -13,14 +13,10 @@ interface MatchCardProps {
 export function MatchCard({ match }: MatchCardProps) {
   const kickOffDate = new Date(match.kickOff);
   
-  const getConfidenceVariant = (confidence: 'High' | 'Medium' | 'Low'): 'default' | 'secondary' | 'destructive' => {
-      switch (confidence) {
-          case 'High': return 'default';
-          case 'Medium': return 'secondary';
-          case 'Low': return 'destructive';
-          default: return 'secondary';
-      }
-  }
+  const probabilityColor = 
+    match.prediction.confidence === 'High' ? 'text-chart-2' :
+    match.prediction.confidence === 'Medium' ? 'text-chart-4' :
+    'text-chart-1';
 
   return (
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
@@ -71,10 +67,13 @@ export function MatchCard({ match }: MatchCardProps) {
               <p className="text-xs text-muted-foreground">Prediction</p>
               <p className="font-bold text-primary">{match.prediction.outcome} ({match.prediction.score})</p>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={getConfidenceVariant(match.prediction.confidence)}>
-                {match.prediction.confidence}
-              </Badge>
+            <div className="flex items-center gap-2 text-right">
+              <div>
+                <p className={cn("font-bold text-lg", probabilityColor)}>
+                    {(match.prediction.winProbability * 100).toFixed(0)}%
+                </p>
+                <p className="text-xs text-muted-foreground -mt-1">Win Rate</p>
+              </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

@@ -15,6 +15,7 @@ export const matches: Match[] = [
       outcome: 'Home Win',
       score: '2-1',
       confidence: 'High',
+      winProbability: 0.85,
       analysisPoints: [
         'Strong home form for Manchester United.',
         'Chelsea missing key striker due to injury.',
@@ -33,6 +34,7 @@ export const matches: Match[] = [
       outcome: 'Draw',
       score: '2-2',
       confidence: 'Medium',
+      winProbability: 0.65,
       analysisPoints: [
         'Both teams are in excellent scoring form.',
         "Liverpool's defense has been shaky in recent games.",
@@ -48,13 +50,14 @@ export const matches: Match[] = [
     league: 'La Liga',
     stadium: 'Santiago Bernabéu',
     prediction: {
-      outcome: 'Away Win',
-      score: '1-3',
+      outcome: 'Home Win',
+      score: '2-0',
       confidence: 'Medium',
+      winProbability: 0.7,
       analysisPoints: [
-        'Barcelona is on a 5-match winning streak.',
-        'Real Madrid has key midfielders suspended for this match.',
-        'Recent El Clásico matches have favored the away team.',
+        'Real Madrid is on a 5-match winning streak at home.',
+        'Barcelona has key midfielders suspended for this match.',
+        'Recent El Clásico matches at Bernabéu have favored the home team.',
       ],
     },
   },
@@ -69,6 +72,7 @@ export const matches: Match[] = [
       outcome: 'Home Win',
       score: '4-1',
       confidence: 'High',
+      winProbability: 0.9,
       analysisPoints: [
         "Bayern has been dominant at home all season.",
         'Dortmund struggles defensively against top-tier attacks.',
