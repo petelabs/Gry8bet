@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Calendar, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface MatchCardProps {
   match: Match;
@@ -12,11 +11,6 @@ interface MatchCardProps {
 
 export function MatchCard({ match }: MatchCardProps) {
   const kickOffDate = new Date(match.kickOff);
-  
-  const probabilityColor = 
-    match.prediction.confidence === 'High' ? 'text-chart-2' :
-    match.prediction.confidence === 'Medium' ? 'text-chart-4' :
-    'text-chart-1';
 
   return (
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
@@ -64,16 +58,9 @@ export function MatchCard({ match }: MatchCardProps) {
 
           <div className="bg-muted/50 rounded-md p-3 flex justify-between items-center">
             <div>
-              <p className="text-xs text-muted-foreground">Prediction</p>
-              <p className="font-bold text-primary">{match.prediction.outcome} ({match.prediction.score})</p>
+              <p className="text-sm font-semibold text-primary">View Match & AI Analysis</p>
             </div>
             <div className="flex items-center gap-2 text-right">
-              <div>
-                <p className={cn("font-bold text-lg", probabilityColor)}>
-                    {(match.prediction.winProbability * 100).toFixed(0)}%
-                </p>
-                <p className="text-xs text-muted-foreground -mt-1">Win Rate</p>
-              </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

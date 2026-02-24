@@ -15,7 +15,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Checkbox } from '../ui/checkbox';
 import { Label } from '../ui/label';
 
 interface MatchListProps {
@@ -26,7 +25,6 @@ interface MatchListProps {
 export function MatchList({ matches, leagues }: MatchListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('all');
-  const [highConfidenceOnly, setHighConfidenceOnly] = useState(false);
 
   const filteredMatches = useMemo(() => {
     return matches.filter(match => {
@@ -34,10 +32,9 @@ export function MatchList({ matches, leagues }: MatchListProps) {
         match.homeTeam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         match.awayTeam.name.toLowerCase().includes(searchTerm.toLowerCase());
       const leagueFilter = selectedLeague === 'all' || match.league === selectedLeague;
-      const confidenceFilter = !highConfidenceOnly || match.prediction.confidence === 'High';
-      return teamSearch && leagueFilter && confidenceFilter;
+      return teamSearch && leagueFilter;
     }).sort((a, b) => new Date(a.kickOff).getTime() - new Date(b.kickOff).getTime());
-  }, [matches, searchTerm, selectedLeague, highConfidenceOnly]);
+  }, [matches, searchTerm, selectedLeague]);
 
   const FilterControls = () => (
     <div className="grid gap-4">
@@ -55,15 +52,6 @@ export function MatchList({ matches, leagues }: MatchListProps) {
                 </SelectContent>
             </Select>
         </div>
-        <div className="flex items-center space-x-2">
-            <Checkbox id="high-confidence-filter" checked={highConfidenceOnly} onCheckedChange={(checked) => setHighConfidenceOnly(!!checked)} />
-            <Label htmlFor="high-confidence-filter" className="text-sm font-normal">
-                High-Confidence Picks Only
-            </Label>
-        </div>
-        <p className="text-xs text-muted-foreground -mt-2">
-            Note: 100% win is not guaranteed.
-        </p>
     </div>
   );
 
@@ -92,12 +80,6 @@ export function MatchList({ matches, leagues }: MatchListProps) {
                     ))}
                 </SelectContent>
             </Select>
-            <div className="flex items-center space-x-2">
-                <Checkbox id="high-confidence-desktop" checked={highConfidenceOnly} onCheckedChange={(checked) => setHighConfidenceOnly(!!checked)} />
-                <Label htmlFor="high-confidence-desktop" className="text-sm font-normal whitespace-nowrap">
-                    High-Confidence Only
-                </Label>
-            </div>
         </div>
         <div className="md:hidden">
              <Sheet>

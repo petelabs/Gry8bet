@@ -10,22 +10,49 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
+// Tool to simulate fetching expert analysis
+const getExpertMatchAnalysis = ai.defineTool(
+  {
+    name: 'getExpertMatchAnalysis',
+    description: 'Gets detailed expert analysis and real-time data for a given football match.',
+    inputSchema: z.object({
+      homeTeamName: z.string(),
+      awayTeamName: z.string(),
+    }),
+    outputSchema: z.object({
+      headToHeadStats: z.string().describe('Summary of the last 5 head-to-head results.'),
+      keyPlayerStatus: z.string().describe('Information on injuries, suspensions, or key player form.'),
+      bettingOddsInsight: z.string().describe('Insights from current betting market odds.'),
+      teamForm: z.string().describe('Analysis of both teams\' recent performance and form (last 5 games).'),
+    }),
+  },
+  async ({ homeTeamName, awayTeamName }) => {
+    // In a real application, this would be a call to a third-party sports data API.
+    // We are mocking the response here for demonstration purposes.
+    console.log(`Fetching expert analysis for ${homeTeamName} vs ${awayTeamName}...`);
+    return {
+      headToHeadStats: `${homeTeamName} has won 3 of the last 5 meetings, with 2 draws.`,
+      keyPlayerStatus: `${awayTeamName}'s top scorer is returning from a minor injury but may not be at 100%. ${homeTeamName} has a key defender suspended.`,
+      bettingOddsInsight: 'Major betting markets have seen a slight shift towards a draw in the last 24 hours, suggesting uncertainty.',
+      teamForm: `${homeTeamName} is unbeaten in their last 8 home games. ${awayTeamName} has struggled to score on the road, with only 2 goals in their last 4 away matches.`,
+    };
+  }
+);
+
+
 const GetMatchPredictionSummaryInputSchema = z.object({
   homeTeamName: z.string().describe('The name of the home team.'),
   awayTeamName: z.string().describe('The name of the away team.'),
   league: z.string().describe('The league the match is being played in.'),
-  kickOffTime: z.string().describe('The kick-off time of the match.'),
-  predictedOutcome: z.string().describe('The predicted outcome of the match (e.g., Home Win, Draw, Away Win).'),
-  predictedScore: z.string().describe('The predicted score of the match (e.g., 2-1).'),
-  predictionConfidence: z.string().describe('The confidence level of the prediction (e.g., High, Medium, Low, or a percentage).'),
-  analysisPoints: z.array(z.string()).describe('An array of key analysis points supporting the prediction.'),
 }).describe('Input data for generating a football match prediction summary.');
 
 export type GetMatchPredictionSummaryInput = z.infer<typeof GetMatchPredictionSummaryInputSchema>;
 
 const GetMatchPredictionSummaryOutputSchema = z.object({
-  summary: z.string().describe('A concise summary of the match prediction insights and the most confident pick.'),
-}).describe('Output containing the generated prediction summary.');
+  summary: z.string().describe('A concise, expert-level summary of the match prediction insights, incorporating all available data and analysis.'),
+  mostConfidentPick: z.string().describe('The single most confident prediction based on the analysis (e.g., "Home Win", "Both Teams to Score").'),
+  confidenceScore: z.number().int().min(1).max(100).describe('A confidence score for the pick, from 1 (very low) to 100 (very high).'),
+}).describe('Output containing the generated prediction summary and confident pick.');
 
 export type GetMatchPredictionSummaryOutput = z.infer<typeof GetMatchPredictionSummaryOutputSchema>;
 
@@ -33,26 +60,19 @@ const prompt = ai.definePrompt({
   name: 'getMatchPredictionSummaryPrompt',
   input: { schema: GetMatchPredictionSummaryInputSchema },
   output: { schema: GetMatchPredictionSummaryOutputSchema },
-  prompt: `You are an expert football prediction analyst. Your task is to provide a concise summary of the key prediction insights for an upcoming football match, highlighting the most confident pick and relevant factors.
+  tools: [getExpertMatchAnalysis],
+  prompt: `You are a world-class football prediction analyst. Your task is to provide a reliable, expert-level prediction summary for an upcoming football match.
+
+First, you MUST use the getExpertMatchAnalysis tool to fetch detailed, real-time data for the match between {{{homeTeamName}}} and {{{awayTeamName}}}.
+
+Then, synthesize the information from the tool with the basic match details below. Your analysis should be sharp, insightful, and avoid generic statements.
+
+Base your final summary, your most confident pick, and your confidence score *primarily* on the expert data returned by the tool.
 
 Match Details:
-Home Team: {{{homeTeamName}}}
-Away Team: {{{awayTeamName}}}
-League: {{{league}}}
-Kick-off Time: {{{kickOffTime}}}
+- League: {{{league}}}
 
-Prediction:
-Outcome: {{{predictedOutcome}}}
-Score: {{{predictedScore}}}
-Confidence: {{{predictionConfidence}}}
-
-Analysis Points:
-{{#each analysisPoints}}- {{{this}}}
-{{/each}}
-
-Based on the above information, provide a brief summary (2-3 paragraphs) of the key insights, explaining why the predicted outcome is the most confident pick. Focus on the most important factors.
-
-Summary:`,
+Generate a concise summary (2-3 paragraphs) that explains the reasoning behind your prediction. Conclude with the single most confident pick and a numerical confidence score.`,
 });
 
 const getMatchPredictionSummaryFlow = ai.defineFlow(
