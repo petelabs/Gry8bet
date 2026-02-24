@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import type { Match } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LoaderCircle, Zap, ShieldCheck } from 'lucide-react';
+import { Sparkles, LoaderCircle } from 'lucide-react';
 import { getMatchPredictionSummary } from '@/ai/flows/get-match-prediction-summary';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useProPlan } from '@/hooks/use-pro-plan';
-import { ProModal } from '@/components/pro-modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { ShieldCheck } from 'lucide-react';
 
 interface AIInsightProps {
   match: Match;
@@ -25,15 +24,9 @@ type AIResult = {
 export function AIInsight({ match }: AIInsightProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AIResult | null>(null);
-  const [showProModal, setShowProModal] = useState(false);
-  const { isPro } = useProPlan();
   const { toast } = useToast();
 
   const handleGenerateInsight = async () => {
-    if (!isPro) {
-        setShowProModal(true);
-        return;
-    }
     setLoading(true);
     setResult(null);
 
@@ -62,16 +55,14 @@ export function AIInsight({ match }: AIInsightProps) {
 
   return (
     <div className="space-y-4">
-      <ProModal isOpen={showProModal} onClose={() => setShowProModal(false)} />
-      
       {!result && (
           <Button onClick={handleGenerateInsight} disabled={loading} className="w-full">
             {loading ? (
               <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             ) : (
-              isPro ? <Sparkles className="mr-2 h-4 w-4" /> : <Zap className="mr-2 h-4 w-4" />
+              <Sparkles className="mr-2 h-4 w-4" />
             )}
-            {loading ? 'Analyzing...' : (isPro ? 'Get Expert AI Analysis' : 'Get Expert AI Analysis (Pro)')}
+            {loading ? 'Analyzing...' : 'Get Expert AI Analysis'}
           </Button>
       )}
 

@@ -8,6 +8,7 @@ import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { ShareCard } from '@/components/sharing/share-card';
+import { BetNowCard } from '@/components/betting/bet-now-card';
 
 export default function Home() {
     const [matches, setMatches] = useState<Match[]>([]);
@@ -32,8 +33,6 @@ export default function Home() {
                 if (fixtureData.results > 0) {
                     const fetchedMatches: Match[] = fixtureData.response
                         .map(mapApiFixtureToMatch)
-                        // Filter out matches that have already started
-                        .filter(match => new Date(match.kickOff) > new Date())
                         .sort((a, b) => new Date(a.kickOff).getTime() - new Date(b.kickOff).getTime());
                     setMatches(fetchedMatches);
                 } else {
@@ -84,7 +83,7 @@ export default function Home() {
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No upcoming matches found.</h3>
-                    <p className="mt-1 text-sm">There are no new matches scheduled for the rest of today.</p>
+                    <p className="mt-1 text-sm">There are no new matches scheduled for today.</p>
                 </div>
                  <div className="mt-8">
                     <ShareCard />
@@ -99,7 +98,10 @@ export default function Home() {
         <div className="container py-6 sm:py-8">
             <div className="space-y-8">
                 <MatchList matches={matches} leagues={leagues} />
-                <ShareCard />
+                <div className="grid md:grid-cols-2 gap-8">
+                    <BetNowCard />
+                    <ShareCard />
+                </div>
             </div>
         </div>
     );

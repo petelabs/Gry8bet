@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeFirebase } from '@/firebase';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const { auth } = initializeFirebase();
 const provider = new GoogleAuthProvider();
@@ -15,6 +15,27 @@ export async function signInWithGoogle() {
     throw error;
   }
 }
+
+export async function signUpWithEmail(email: string, password: string): Promise<any> {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        return userCredential.user;
+    } catch (error) {
+        console.error("Error signing up with email", error);
+        throw error;
+    }
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<any> {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        return userCredential.user;
+    } catch (error) {
+        console.error("Error signing in with email", error);
+        throw error;
+    }
+}
+
 
 export async function signOut() {
   try {
