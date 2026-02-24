@@ -7,70 +7,71 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const WHATSAPP_NUMBER = '255987066051'; // IMPORTANT: Replace with your number if this is incorrect.
+const MWK_EXCHANGE_RATE = 1730;
 
 const plans = [
   {
     name: 'Starter',
-    price: '$1',
+    price: 1,
     period: '/ week',
     predictions: '5 AI Predictions',
     features: ['Basic match analysis', 'Email support'],
-    color: 'border-gray-300',
+    bgColor: 'bg-slate-50 hover:bg-slate-100',
     icon: <Trophy className="h-6 w-6 mb-4 text-gray-500" />,
   },
   {
     name: 'Amateur',
-    price: '$1.9',
+    price: 1.9,
     period: '/ week',
     predictions: '13 AI Predictions',
     features: ['Detailed analysis', 'Betting insights', 'Email support'],
-    color: 'border-blue-400',
+    bgColor: 'bg-blue-50 hover:bg-blue-100',
     icon: <Rocket className="h-6 w-6 mb-4 text-blue-500" />,
   },
   {
     name: 'Pro',
-    price: '$3',
+    price: 3,
     period: '/ week',
     predictions: '20 AI Predictions',
     features: ['All Amateur features', 'High-confidence alerts', 'Priority support'],
-    color: 'border-purple-500',
+    bgColor: 'bg-purple-50 hover:bg-purple-100',
     icon: <Star className="h-6 w-6 mb-4 text-purple-500" />,
   },
   {
     name: 'Expert',
-    price: '$5',
+    price: 5,
     period: '/ month',
     predictions: '40 AI Predictions',
     features: ['All Pro features', 'Ad-free experience', 'Performance review'],
-    color: 'border-green-500',
+    bgColor: 'bg-green-50 hover:bg-green-100',
     icon: <BadgePercent className="h-6 w-6 mb-4 text-green-500" />,
   },
   {
     name: 'Master',
-    price: '$10',
+    price: 10,
     period: '/ month',
     predictions: '150+ AI Predictions',
     features: ['All Expert features', 'Deeper performance insights', 'Next month renewal discount'],
-    color: 'border-orange-500',
+    bgColor: 'bg-orange-50 hover:bg-orange-100',
     icon: <KeyRound className="h-6 w-6 mb-4 text-orange-500" />,
   },
   {
     name: 'VIP',
-    price: '$20',
+    price: 20,
     period: '/ month',
     predictions: 'All Master Predictions',
     features: ['90-99% win probability insights', '7-day bonus on renewal', 'All Master features'],
-    color: 'border-yellow-500',
+    bgColor: 'bg-yellow-100 hover:bg-yellow-200',
     highlight: true,
-    icon: <Crown className="h-6 w-6 mb-4 text-yellow-500" />,
+    icon: <Crown className="h-6 w-6 mb-4 text-yellow-600" />,
   },
   {
     name: 'Legend',
-    price: '$300',
+    price: 300,
     period: 'Lifetime',
     predictions: 'Unlimited Predictions',
     features: ['All features forever', 'Exclusive community access', 'Direct line to analysts'],
-    color: 'border-gray-800',
+    bgColor: 'bg-gray-100 hover:bg-gray-200',
     icon: <ShieldCheck className="h-6 w-6 mb-4 text-gray-800" />,
   },
 ];
@@ -96,7 +97,7 @@ export default function PricingPage() {
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {plans.map((plan) => (
-          <Card key={plan.name} className={cn('flex flex-col', plan.color, plan.highlight && 'relative ring-2 ring-yellow-500 shadow-2xl')}>
+          <Card key={plan.name} className={cn('flex flex-col transition-colors', plan.bgColor, plan.highlight && 'relative ring-2 ring-yellow-500 shadow-2xl')}>
              {plan.highlight && (
                 <div className="absolute top-0 -translate-y-1/2 w-full flex justify-center">
                     <div className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
@@ -107,9 +108,14 @@ export default function PricingPage() {
             <CardHeader className="text-center items-center pt-10">
               {plan.icon}
               <CardTitle className="text-2xl">{plan.name}</CardTitle>
-              <div>
-                <span className="text-4xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">{plan.period}</span>
+              <div className="flex flex-col">
+                <div>
+                  <span className="text-4xl font-bold">${plan.price}</span>
+                  <span className="text-muted-foreground">{plan.period}</span>
+                </div>
+                <span className="text-xs text-muted-foreground mt-1">
+                    (approx. MWK {(plan.price * MWK_EXCHANGE_RATE).toLocaleString()})
+                </span>
               </div>
               <CardDescription>{plan.predictions}</CardDescription>
             </CardHeader>

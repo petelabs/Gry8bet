@@ -2,7 +2,7 @@
 
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from '@/components/ui/card';
 import { Shield, LoaderCircle } from 'lucide-react';
 import { AIInsight } from '@/components/matches/ai-insight';
 import { MatchDetails } from '@/components/matches/match-details';
