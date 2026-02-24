@@ -3,10 +3,11 @@
 import type { Match } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Calendar, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 interface MatchCardProps {
   match: Match;
@@ -15,17 +16,40 @@ interface MatchCardProps {
 export function MatchCard({ match }: MatchCardProps) {
   const [kickOffTime, setKickOffTime] = useState<string | null>(null);
   const [kickOffDay, setKickOffDay] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
   
   useEffect(() => {
     const kickOffDate = new Date(match.kickOff);
     // This ensures the time is formatted on the client, avoiding hydration mismatches.
     setKickOffTime(format(kickOffDate, 'HH:mm'));
     setKickOffDay(format(kickOffDate, 'MMM d'));
+
+    // Logic for live status simulation
+    const matchEndTime = addMinutes(kickOffDate, 115); // Approx. match duration
+
+    const checkLiveStatus = () => {
+      const now = new Date();
+      if (now >= kickOffDate && now <= matchEndTime) {
+        setIsLive(true);
+      } else {
+        setIsLive(false);
+      }
+    };
+
+    checkLiveStatus(); // Initial check
+    const interval = setInterval(checkLiveStatus, 60000); // Check every minute
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, [match.kickOff]);
 
   return (
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
-      <Card className="hover:shadow-md transition-shadow duration-300 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2">
+      <Card className="hover:shadow-md transition-shadow duration-300 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 relative">
+        {isLive && (
+          <Badge variant="destructive" className="absolute top-2 right-2 animate-pulse z-10">
+            Live
+          </Badge>
+        )}
         <CardContent className="p-4 space-y-4">
           <div className="flex justify-between items-center text-xs text-muted-foreground">
             <span>{match.league}</span>

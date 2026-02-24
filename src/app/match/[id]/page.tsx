@@ -12,7 +12,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { BetNowCard } from '@/components/betting/bet-now-card';
 import type { Match } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { addMinutes } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 // Note: generateMetadata is a server-only function. In a client component,
 // you can set the document title using useEffect, but it's less ideal for SEO.
@@ -29,6 +31,28 @@ export default function MatchPage() {
   }, [firestore, id]);
 
   const { data: match, isLoading, error } = useDoc<Match>(matchRef);
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    if (!match) return;
+
+    const kickOffDate = new Date(match.kickOff);
+    const matchEndTime = addMinutes(kickOffDate, 115); // Approx. match duration
+
+    const checkLiveStatus = () => {
+      const now = new Date();
+      if (now >= kickOffDate && now <= matchEndTime) {
+        setIsLive(true);
+      } else {
+        setIsLive(false);
+      }
+    };
+
+    checkLiveStatus(); // Initial check
+    const interval = setInterval(checkLiveStatus, 60000); // Check every minute
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [match]);
 
   if (error) {
     return (
@@ -59,7 +83,12 @@ export default function MatchPage() {
   return (
     <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
       <div className="space-y-6">
-        <Card>
+        <Card className="relative">
+           {isLive && (
+            <Badge variant="destructive" className="absolute top-4 right-4 animate-pulse z-10">
+              Live
+            </Badge>
+          )}
           <CardHeader className="text-center">
             <div className="flex justify-around items-center">
               <div className="flex flex-col items-center gap-2 w-1/3">
