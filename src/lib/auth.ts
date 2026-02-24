@@ -58,3 +58,10 @@ export async function signOut() {
     throw error;
   }
 }
+
+export function generateCustomUserId(uid: string): string {
+  if (!uid) return '';
+  // Use last 8 chars for more "randomness" appearance
+  const uniquePart = uid.slice(-8).toUpperCase();
+  return `Gry8${uniquePart}VIP`;
+}

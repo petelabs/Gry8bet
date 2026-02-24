@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { LoaderCircle } from 'lucide-react';
-import { updateUserProfile } from '@/lib/auth';
+import { LoaderCircle, Copy } from 'lucide-react';
+import { updateUserProfile, generateCustomUserId } from '@/lib/auth';
 import { Label } from '@/components/ui/label';
 
 const profileSchema = z.object({
@@ -33,6 +33,8 @@ export default function AccountPage() {
       displayName: '',
     },
   });
+  
+  const customUserId = user ? generateCustomUserId(user.uid) : '';
 
   useEffect(() => {
     if (!isUserLoading) {
@@ -63,6 +65,15 @@ export default function AccountPage() {
       setIsLoading(false);
     }
   };
+
+  const handleCopyUserId = () => {
+    if (!customUserId) return;
+    navigator.clipboard.writeText(customUserId);
+    toast({
+      title: 'User ID Copied!',
+      description: 'Your user ID has been copied to the clipboard.',
+    });
+  };
   
   if (isUserLoading || !user) {
     return <div className="container flex justify-center items-center py-24">Loading...</div>;
@@ -73,11 +84,29 @@ export default function AccountPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Account Settings</CardTitle>
-          <CardDescription>Manage your public profile information.</CardDescription>
+          <CardDescription>Manage your public profile and user information.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-8">
+            <div className="space-y-6">
+                 <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input value={user.email || 'No email associated'} disabled />
+                 </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="userId">Your User ID</Label>
+                    <div className="flex items-center gap-2">
+                        <Input id="userId" value={customUserId} readOnly />
+                        <Button variant="outline" size="icon" onClick={handleCopyUserId} aria-label="Copy User ID">
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        You will need this ID when subscribing to a plan.
+                    </p>
+                </div>
+            </div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 border-t pt-6">
               <FormField
                 control={form.control}
                 name="displayName"
@@ -91,11 +120,6 @@ export default function AccountPage() {
                   </FormItem>
                 )}
               />
-               <div className="space-y-2">
-                 <Label>Email</Label>
-                 <Input value={user.email || 'No email associated'} disabled />
-               </div>
-
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes

@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     default: 'Gry8bet | AI-Powered Football Predictions & Betting Insights',
     template: '%s | Gry8bet',
   },
-  description: 'Get expert football predictions with Gry8bet. Our AI analyzes match data, stats, and expert insights to give you reliable betting tips, confident picks, and detailed analysis for all major leagues. Be the #1 bettor.',
-  keywords: ['bet predictions', 'football predictions', 'soccer predictions', 'AI betting', 'sports betting tips', 'Gry8bet', 'expert analysis', 'betting insights'],
+  description: 'Get expert football predictions with Gry8bet. Our AI analyzes match data, stats, and expert insights to give you reliable betting tips, confident picks, and detailed analysis for all major leagues. Be the #1 bettor with our football betting tips.',
+  keywords: ['bet predictions', 'football predictions', 'soccer predictions', 'AI betting', 'sports betting tips', 'Gry8bet', 'expert analysis', 'betting insights', 'football betting', 'soccer betting', 'live scores', 'match analysis'],
   manifest: '/manifest.webmanifest',
   icons: {
     icon: '/icons/icon-192x192.png',

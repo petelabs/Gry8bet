@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { signInWithGoogle } from '@/lib/auth';
@@ -15,13 +15,15 @@ import { useToast } from '@/hooks/use-toast';
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
   const { toast } = useToast();
 
   useEffect(() => {
     if (!isUserLoading && user) {
-      router.push('/');
+      router.push(redirect || '/');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, redirect]);
 
   const handleSignIn = async () => {
     try {

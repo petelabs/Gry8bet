@@ -5,6 +5,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useUser } from '@/firebase';
+import { generateCustomUserId } from '@/lib/auth';
+import { useRouter } from 'next/navigation';
+
 
 const WHATSAPP_NUMBER = '265987066051';
 const MWK_EXCHANGE_RATE = 1730;
@@ -78,12 +82,15 @@ const plans = [
 
 
 export default function PricingPage() {
+  const { user } = useUser();
+  const router = useRouter();
+  
   return (
     <div className="container py-12 sm:py-16">
       <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Choose Your Plan</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Choose Your Winning Plan</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Select the perfect plan to get the ultimate edge in your betting journey.
+          Select the perfect plan to get the ultimate edge in your betting journey. Unlock expert AI insights now.
         </p>
       </div>
 
@@ -96,7 +103,12 @@ export default function PricingPage() {
         </Alert>
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {plans.map((plan) => (
+        {plans.map((plan) => {
+          const customUserId = user ? generateCustomUserId(user.uid) : 'NOT_LOGGED_IN';
+          const message = `Hello Gry8bet! I'm ready to become a champion. I would like to subscribe to the *${plan.name}* plan.\n\nMy User ID is: *${customUserId}*\n\nPlease guide me on the next steps for payment.`;
+          const whatsAppUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+          return (
           <Card key={plan.name} className={cn('flex flex-col transition-colors', plan.bgColor, plan.highlight && 'relative ring-2 ring-yellow-500 shadow-2xl')}>
              {plan.highlight && (
                 <div className="absolute top-0 -translate-y-1/2 w-full flex justify-center">
@@ -130,14 +142,20 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
+              {user ? (
                 <Button asChild size="lg" className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                    <Link href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hello! I'd like to subscribe to the ${plan.name} plan.`)}`} target="_blank" rel="noopener noreferrer">
+                    <Link href={whatsAppUrl} target="_blank" rel="noopener noreferrer">
                         Choose {plan.name}
                     </Link>
                 </Button>
+              ) : (
+                <Button size="lg" className="w-full" variant={plan.highlight ? 'default' : 'outline'} onClick={() => router.push('/login?redirect=/pricing')}>
+                    Sign In to Subscribe
+                </Button>
+              )}
             </CardFooter>
           </Card>
-        ))}
+        )})}
       </div>
 
         <div className="mt-20 text-center">
@@ -158,7 +176,7 @@ export default function PricingPage() {
             <CardContent className="space-y-4 text-sm">
                 <ol className="list-decimal list-inside space-y-4">
                     <li>
-                        Click the <strong>"Choose Plan"</strong> button for your desired subscription. This opens a WhatsApp chat with a pre-filled message.
+                        Click the <strong>"Choose Plan"</strong> button for your desired subscription. This opens a WhatsApp chat with a pre-filled message including your User ID.
                     </li>
                     <li>
                         Send the message to let us know which plan you've chosen. To build your trust, we guarantee a response within our business hours.
