@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { signInWithGoogle } from '@/lib/auth';
 import { useUser } from '@/firebase';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { GoogleIcon } from '@/components/auth/google-icon';
 import { EmailForm } from '@/components/auth/email-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from '@/components/ui/separator';
+import { getAdditionalUserInfo } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -23,7 +25,15 @@ export default function LoginPage() {
 
   const handleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      const additionalInfo = getAdditionalUserInfo(result);
+      if (additionalInfo?.isNewUser) {
+        toast({
+            title: '🎉 Welcome Offer Unlocked!',
+            description: 'As a new user, you get 50% off any plan for the next 48 hours. Don\'t miss out!',
+            duration: 10000,
+        });
+      }
       // The useEffect will handle the redirect
     } catch (error) {
       console.error("Sign in failed", error);

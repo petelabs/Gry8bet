@@ -9,11 +9,37 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { ShareCard } from '@/components/sharing/share-card';
 import { BetNowCard } from '@/components/betting/bet-now-card';
+import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 export default function Home() {
     const [matches, setMatches] = useState<Match[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { toast } = useToast();
+    const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
+
+    useEffect(() => {
+        const adShown = localStorage.getItem('affiliate_ad_shown');
+        if (!adShown) {
+            // Use a timeout to avoid overwhelming the user on first load
+            const timer = setTimeout(() => {
+                toast({
+                    title: "Best Odds Guaranteed!",
+                    description: "Ready to bet? Get the best odds on all matches with our trusted partner, 22Bet.",
+                    duration: 15000,
+                    action: (
+                        <ToastAction altText="Bet Now" onClick={() => window.open(AFFILIATE_URL, '_blank')}>
+                            Bet Now
+                        </ToastAction>
+                    ),
+                });
+                localStorage.setItem('affiliate_ad_shown', 'true');
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
 
     useEffect(() => {
         const fetchMatches = async () => {

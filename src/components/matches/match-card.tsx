@@ -53,7 +53,7 @@ export function MatchCard({ match }: MatchCardProps) {
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
       <Card className="hover:shadow-md transition-shadow duration-300 group-focus-visible:ring-2 group-focus-visible:ring-ring group-focus-visible:ring-offset-2 relative">
         {isLive && (
-          <Badge variant="destructive" className="absolute top-2 right-2 animate-pulse z-10">
+          <Badge variant="destructive" className="absolute top-2 left-2 animate-pulse z-10">
             Live
           </Badge>
         )}

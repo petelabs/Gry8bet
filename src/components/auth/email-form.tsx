@@ -44,6 +44,11 @@ export function EmailForm({ mode }: EmailFormProps) {
           title: 'Account Created!',
           description: 'Welcome! You are now signed in.',
         });
+        toast({
+            title: '🎉 Welcome Offer Unlocked!',
+            description: 'As a new user, you get 50% off any plan for the next 48 hours. Don\'t miss out!',
+            duration: 10000,
+        });
       } else {
         await signInWithEmail(data.email, data.password);
         toast({
