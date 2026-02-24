@@ -8,7 +8,6 @@ import { AIInsight } from '@/components/matches/ai-insight';
 import { MatchDetails } from '@/components/matches/match-details';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { BetNowCard } from '@/components/betting/bet-now-card';
 import type { Match } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { addMinutes } from 'date-fns';
@@ -162,7 +161,7 @@ export default function MatchPage() {
               Expert AI Analysis
             </CardTitle>
             <CardDescription>
-              Use our powerful AI to get expert analysis and the most confident prediction for this match.
+              Get our AI-powered analysis and the most confident pick for this match.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -170,7 +169,6 @@ export default function MatchPage() {
           </CardContent>
         </Card>
 
-        <BetNowCard />
         <ShareCard />
       </div>
     </div>

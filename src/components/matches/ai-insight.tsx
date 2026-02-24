@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import type { Match } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LoaderCircle } from 'lucide-react';
+import { Sparkles, LoaderCircle, ArrowUpRight } from 'lucide-react';
 import { getMatchPredictionSummary } from '@/ai/flows/get-match-prediction-summary';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
 interface AIInsightProps {
   match: Match;
@@ -20,6 +21,8 @@ type AIResult = {
     mostConfidentPick: string;
     confidenceScore: number;
 }
+
+const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
 
 export function AIInsight({ match }: AIInsightProps) {
   const [loading, setLoading] = useState(false);
@@ -56,18 +59,26 @@ export function AIInsight({ match }: AIInsightProps) {
   return (
     <div className="space-y-4">
       {!result && (
-          <Button onClick={handleGenerateInsight} disabled={loading} className="w-full">
-            {loading ? (
-              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
-            )}
-            {loading ? 'Analyzing...' : 'Get Expert AI Analysis'}
-          </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button onClick={handleGenerateInsight} disabled={loading} variant="outline">
+                {loading ? (
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                {loading ? 'Analyzing...' : 'View AI Prediction'}
+            </Button>
+            <Button asChild>
+                <Link href={AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+                    Bet Now
+                    <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </div>
       )}
 
       {result && (
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4">
             <Card>
                 <CardContent className="p-4 space-y-3">
                     <div className="flex justify-between items-center">
@@ -94,6 +105,13 @@ export function AIInsight({ match }: AIInsightProps) {
                 {result.summary}
               </AlertDescription>
             </Alert>
+            
+            <Button asChild size="lg" className="w-full">
+              <Link href={AFFILIATE_URL} target="_blank" rel="noopener noreferrer">
+                Place Your Bet Now on 22Bet
+                <ArrowUpRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
         </div>
       )}
     </div>
