@@ -29,7 +29,7 @@ export function RecommendationCard({ site }: RecommendationCardProps) {
       <CardContent>
         <Button asChild className="w-full">
           <Link href={site.url} target="_blank" rel="noopener noreferrer">
-            Visit Site
+            Bet Now
             <ArrowUpRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

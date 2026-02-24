@@ -2,6 +2,15 @@ import type { BettingSite } from './types';
 
 export const bettingSites: BettingSite[] = [
   {
+    id: '6',
+    name: '22Bet',
+    url: 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733',
+    logoUrl: 'https://picsum.photos/seed/22b/200/200',
+    logoImageHint: '22bet logo',
+    continents: ['Africa', 'Asia', 'Europe'],
+    description: 'A popular international betting site offering a wide range of sports markets, live betting, and casino games.'
+  },
+  {
     id: '1',
     name: 'Betway',
     url: 'https://betway.com',

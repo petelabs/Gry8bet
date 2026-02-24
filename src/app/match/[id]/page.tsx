@@ -9,6 +9,7 @@ import { MatchDetails } from '@/components/matches/match-details';
 import type { Metadata } from 'next';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { BetNowCard } from '@/components/betting/bet-now-card';
 
 type MatchPageProps = {
   params: {
@@ -124,6 +125,8 @@ export default async function MatchPage({ params }: MatchPageProps) {
                     <AIInsight match={match} />
                 </CardContent>
             </Card>
+
+            <BetNowCard />
         </div>
     </div>
   );
