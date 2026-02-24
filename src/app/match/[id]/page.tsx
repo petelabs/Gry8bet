@@ -1,10 +1,10 @@
 import { matches } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Calendar, Clock, MapPin, Trophy, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { AIInsight } from '@/components/matches/ai-insight';
+import { MatchDetails } from '@/components/matches/match-details';
 
 type MatchPageProps = {
   params: {
@@ -32,8 +32,6 @@ export default function MatchPage({ params }: MatchPageProps) {
   if (!match) {
     notFound();
   }
-
-  const kickOffDate = new Date(match.kickOff);
 
   return (
     <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
@@ -68,26 +66,7 @@ export default function MatchPage({ params }: MatchPageProps) {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                            <Trophy className="h-4 w-4 text-primary" />
-                            <span>{match.league}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" />
-                            <span>{match.stadium}</span>
-                        </div>
-                         <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-primary" />
-                            <span>{format(kickOffDate, 'EEEE, MMM d, yyyy')}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-primary" />
-                            <span>{format(kickOffDate, 'p')}</span>
-                        </div>
-                    </div>
-                </CardContent>
+                <MatchDetails match={match} />
             </Card>
 
             <Card>

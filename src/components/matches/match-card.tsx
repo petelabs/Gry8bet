@@ -1,16 +1,25 @@
+'use client';
+
 import type { Match } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight, Calendar, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface MatchCardProps {
   match: Match;
 }
 
 export function MatchCard({ match }: MatchCardProps) {
+  const [kickOffTime, setKickOffTime] = useState<string | null>(null);
   const kickOffDate = new Date(match.kickOff);
+
+  useEffect(() => {
+    // This ensures the time is formatted on the client, avoiding hydration mismatches.
+    setKickOffTime(format(kickOffDate, 'HH:mm'));
+  }, [kickOffDate]);
 
   return (
     <Link href={`/match/${match.id}`} className="group block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
@@ -25,7 +34,7 @@ export function MatchCard({ match }: MatchCardProps) {
                 </div>
                 <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
-                    <span>{format(kickOffDate, 'HH:mm')}</span>
+                    <span>{kickOffTime ?? '--:--'}</span>
                 </div>
             </div>
           </div>
