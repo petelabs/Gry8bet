@@ -16,7 +16,7 @@ export function Header() {
             <Link href="/" className="flex items-center gap-2">
               <ShieldCheck className="h-7 w-7 text-primary" />
               <span className="text-xl font-bold tracking-tight text-primary font-headline hidden sm:inline-block">
-                FootyForecast
+                Gry8bet
               </span>
             </Link>
             
@@ -47,7 +47,7 @@ export function Header() {
                     <Link href="/" className="flex items-center gap-2 mb-6">
                         <ShieldCheck className="h-7 w-7 text-primary" />
                         <span className="text-xl font-bold tracking-tight text-primary font-headline">
-                        FootyForecast
+                        Gry8bet
                         </span>
                     </Link>
                     <nav className="flex flex-col gap-4 text-lg font-medium">

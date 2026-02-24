@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: MatchPageProps): Promise<Meta
   }
 
   return {
-    title: `${match.homeTeam.name} vs ${match.awayTeam.name} | FootyForecast`
+    title: `${match.homeTeam.name} vs ${match.awayTeam.name} | Expert Prediction & Betting Tips`
   }
 }
 
