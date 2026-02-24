@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { Toaster } from "@/components/ui/toaster"
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { AgeVerificationModal } from '@/components/legal/age-verification-modal';
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +40,7 @@ export default function RootLayout({
             <main className="flex-1 flex flex-col">{children}</main>
             <Toaster />
             <InstallPrompt />
+            <AgeVerificationModal />
         </FirebaseClientProvider>
       </body>
     </html>
