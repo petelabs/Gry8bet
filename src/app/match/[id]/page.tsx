@@ -1,10 +1,14 @@
-import { matches } from '@/lib/data';
+import { getFixtureById } from '@/lib/api-sports';
+import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Shield } from 'lucide-react';
 import { AIInsight } from '@/components/matches/ai-insight';
 import { MatchDetails } from '@/components/matches/match-details';
+import type { Metadata } from 'next';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 type MatchPageProps = {
   params: {
@@ -12,8 +16,31 @@ type MatchPageProps = {
   };
 };
 
-export function generateMetadata({ params }: MatchPageProps) {
-  const match = matches.find(m => m.id === params.id);
+async function getMatch(id: string) {
+    const fixtureData = await getFixtureById(id);
+
+    if (!fixtureData || (!fixtureData.response && !fixtureData.errors)) {
+      return { match: null, error: 'Could not fetch match data. The API may be unavailable or the match ID is invalid.' };
+    }
+
+    const hasErrors = Array.isArray(fixtureData.errors) ? fixtureData.errors.length > 0 : Object.keys(fixtureData.errors).length > 0;
+    if (hasErrors) {
+        const errorKey = Object.keys(fixtureData.errors)[0];
+        const errorMessage = fixtureData.errors[errorKey as any];
+        const errorString = typeof errorMessage === 'string' ? errorMessage : 'An unexpected error occurred while fetching match details.';
+        return { match: null, error: errorString };
+    }
+
+    if (fixtureData.results === 0) {
+        return { match: null, error: 'Match not found.' };
+    }
+
+    const match = mapApiFixtureToMatch(fixtureData.response[0]);
+    return { match, error: null };
+}
+
+export async function generateMetadata({ params }: MatchPageProps): Promise<Metadata> {
+  const { match } = await getMatch(params.id);
 
   if (!match) {
     return {
@@ -26,8 +53,22 @@ export function generateMetadata({ params }: MatchPageProps) {
   }
 }
 
-export default function MatchPage({ params }: MatchPageProps) {
-  const match = matches.find(m => m.id === params.id);
+export default async function MatchPage({ params }: MatchPageProps) {
+  const { match, error } = await getMatch(params.id);
+
+  if (error) {
+      return (
+         <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    {error}
+                </AlertDescription>
+            </Alert>
+        </div>
+      );
+  }
 
   if (!match) {
     notFound();

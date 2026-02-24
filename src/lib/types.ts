@@ -67,7 +67,49 @@ export type ApiSportsResponseData = {
 export type ApiSportsPredictionResponse = {
   get: string;
   parameters: { fixture: string };
-  errors: any[];
+  errors: any[] | { [key: string]: string };
   results: number;
   response: ApiSportsResponseData[];
+};
+
+// Types for API-Sports Fixture Response
+export type ApiSportsFixture = {
+    fixture: {
+        id: number;
+        date: string;
+        venue: {
+            name: string | null;
+            city: string | null;
+        };
+    };
+    league: {
+        id: number;
+        name: string;
+        country: string;
+        logo: string;
+        flag: string | null;
+        season: number;
+    };
+    teams: {
+        home: {
+            id: number;
+            name: string;
+            logo: string;
+            winner: boolean | null;
+        };
+        away: {
+            id: number;
+            name: string;
+            logo: string;
+            winner: boolean | null;
+        };
+    };
+};
+
+export type ApiSportsFixtureResponse = {
+    get: string;
+    parameters: { [key: string]: string };
+    errors: any[] | { [key: string]: string };
+    results: number;
+    response: ApiSportsFixture[];
 };
