@@ -3,7 +3,7 @@
 import { Menu, ShieldCheck, LogOut } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "../ui/sheet";
 import { useUser } from "@/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { signOut } from "@/lib/auth";
@@ -98,6 +98,10 @@ export function Header() {
                 </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>Menu</SheetTitle>
+                      <SheetDescription>Main navigation menu.</SheetDescription>
+                    </SheetHeader>
                     <div className="py-6">
                     <Link href="/" className="flex items-center gap-2 mb-6">
                         <ShieldCheck className="h-7 w-7 text-primary" />
