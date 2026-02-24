@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   keywords: ['bet predictions', 'football predictions', 'soccer predictions', 'AI betting', 'sports betting tips', 'Gry8bet', 'expert analysis', 'betting insights', 'football betting', 'soccer betting', 'live scores', 'match analysis'],
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icons/icon-192x192.png',
-    apple: '/icons/icon-192x192.png',
+    icon: '/icon-192x192.png',
+    apple: '/icon-192x192.png',
   },
 };
 
