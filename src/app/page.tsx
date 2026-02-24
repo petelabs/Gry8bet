@@ -1,6 +1,6 @@
 'use client';
     
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, getDoc, setDoc, writeBatch, serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { getFixtures } from '@/lib/api-sports';
@@ -10,7 +10,6 @@ import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { isToday, parseISO } from 'date-fns';
 
 const SYNC_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
@@ -19,14 +18,6 @@ export default function Home() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isSyncing, setIsSyncing] = useState(false);
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 60000); // Update time every minute
-        return () => clearInterval(timer);
-    }, []);
 
     useEffect(() => {
         if (isUserLoading || !user || !firestore) {
@@ -90,25 +81,13 @@ export default function Home() {
     const matchesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         // Fetch all matches from the cache and order them by kick-off time.
-        // We will filter for today's matches on the client-side to avoid timezone issues.
         return query(
             collection(firestore, 'matches'),
             orderBy('kickOff')
         );
     }, [firestore]);
 
-    const { data: allMatchesFromDB, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
-
-    const upcomingMatches = useMemo(() => {
-        if (!allMatchesFromDB) return null;
-
-        // 1. Filter for matches that are "today" in the user's local timezone.
-        const matchesForToday = allMatchesFromDB.filter(match => isToday(parseISO(match.kickOff)));
-        
-        // 2. From that list, filter out matches that have already started.
-        return matchesForToday.filter(match => new Date(match.kickOff) >= currentTime);
-    }, [allMatchesFromDB, currentTime]);
-
+    const { data: matches, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
 
     if (matchesError) {
          return (
@@ -137,7 +116,7 @@ export default function Home() {
         );
     }
     
-    if (!upcomingMatches || upcomingMatches.length === 0) {
+    if (!matches || matches.length === 0) {
         return (
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
@@ -148,11 +127,11 @@ export default function Home() {
         );
     }
 
-    const leagues = [...new Set(upcomingMatches.map(match => match.league))].sort();
+    const leagues = [...new Set(matches.map(match => match.league))].sort();
 
     return (
         <div className="container py-6 sm:py-8">
-        <MatchList matches={upcomingMatches} leagues={leagues} />
+            <MatchList matches={matches} leagues={leagues} />
         </div>
     );
 }
