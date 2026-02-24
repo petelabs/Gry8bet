@@ -1,156 +1,83 @@
 /**
  * @fileoverview Firestore Security Rules for the FootyForecast Application
- * @version 1.0
+ * @version 1.1
  *
  * @description
  * This ruleset establishes a security model for an application that displays public
- * football (soccer) match data, including leagues, teams, matches, and AI-generated
- * predictions.
+ * football (soccer) match data and allows authenticated users to trigger data
+ * synchronization.
  *
  * @philosophy
  * Core Philosophy: The security model is designed for a read-heavy, public-facing
- * application. All data is treated as public information, readable by any client,
- * including unauthenticated users. All client-side write operations (create, update,
- * delete) are explicitly forbidden to protect data integrity. Data is expected to be
- * populated and managed by a trusted backend service or admin SDK.
+ * application. All data is publicly readable. To manage API costs and improve
+ * performance, write operations (for caching data from an external API) are
+ * permitted only for authenticated users, simulating a trusted "cron job" process
+ * on the client side.
  *
  * @structure
  * Data Structure: The database uses a flat, top-level collection structure. Each
- * main data type (leagues, teams, matches, predictions) resides in its own
- * collection. This approach simplifies rules and queries, as there are no
- * hierarchical dependencies for authorization.
+ * main data type resides in its own collection. A `/system` collection is used
+ * for internal metadata, such as tracking synchronization timestamps.
  *
  * @decisions
  * Key Security Decisions:
- * - Public Read Access: All collections are publicly readable to support the app's
- *   primary function of displaying sports data to all users.
- * - Write Lockdown: All direct write access from clients is disabled (`allow write:
- *   if false;`). This is the most secure posture, ensuring that only trusted server-
- *   side processes can modify the data.
+ * - Public Read Access: All data collections are publicly readable to support the app's
+ *   primary function of displaying sports data to all users (`allow get, list: if true`).
+ * - Authenticated Writes: Client-side write access is locked down to only
+ *   authenticated users (`allow write: if request.auth != null;`). This allows
+ *   logged-in users to initiate the data caching process from the API to Firestore,
+ *   while preventing anonymous or malicious writes.
  * - No User-Specific Data: The data model does not contain any user-specific or
- *   private information, removing the need for ownership-based rules.
- *
- * @denormalization
- * Denormalization for Performance: The data model deliberately denormalizes key
- * prediction details (e.g., predicted scores, AI summary) from the 'predictions'
- * collection directly into the corresponding 'matches' documents. This is a
- * performance optimization that allows the application to fetch a list of matches
- * and their primary prediction data in a single, efficient query. These rules support
- * this model by applying the same public-read security posture to both collections.
+ *   private information, simplifying rules away from ownership-based logic.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // -------------------------------------------------------------------------
-    // Helper Functions
-    // -------------------------------------------------------------------------
-
-    // The isSignedIn function has been removed as it was unused and
-    // caused linting warnings. For a public-read, write-locked application,
-    // authentication status is not relevant for the current rules.
-
+    /**
+     * Checks if the user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
     // -------------------------------------------------------------------------
-    // Collection: /leagues
+    // Collection: /leagues, /teams, /matches, /predictions
     // -------------------------------------------------------------------------
 
     /**
      * @description
-     *   Manages football leagues. This data is public and read-only for all clients.
+     *   Manages public football data. This data is publicly readable by anyone.
+     *   Write operations are restricted to authenticated users, who are trusted
+     *   to trigger the client-side data caching from the external API.
      * @path
      *   /leagues/{leagueId}
-     * @allow
-     *   (get) Any user, signed in or not, can read a specific league's details.
-     * @deny
-     *   (create) No client is permitted to create a new league document.
-     * @principle
-     *   Protects canonical data by making it publicly readable but centrally managed.
-     */
-    match /leagues/{leagueId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-
-    // -------------------------------------------------------------------------
-    // Collection: /teams
-    // -------------------------------------------------------------------------
-
-    /**
-     * @description
-     *   Manages football teams. This data is public and read-only for all clients.
-     * @path
      *   /teams/{teamId}
-     * @allow
-     *   (list) Any user, signed in or not, can list all teams.
-     * @deny
-     *   (update) No client is permitted to update an existing team document.
-     * @principle
-     *   Protects canonical data by making it publicly readable but centrally managed.
-     */
-    match /teams/{teamId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-
-    // -------------------------------------------------------------------------
-    // Collection: /matches
-    // -------------------------------------------------------------------------
-
-    /**
-     * @description
-     *   Manages football matches. This data is public and read-only for all clients.
-     *   It includes denormalized prediction data for efficient querying.
-     * @path
      *   /matches/{matchId}
-     * @allow
-     *   (get) Any user, signed in or not, can read the details of a specific match.
-     * @deny
-     *   (delete) No client is permitted to delete a match document.
-     * @principle
-     *   Protects canonical data by making it publicly readable but centrally managed.
-     */
-    match /matches/{matchId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-
-    // -------------------------------------------------------------------------
-    // Collection: /predictions
-    // -------------------------------------------------------------------------
-
-    /**
-     * @description
-     *   Manages detailed AI predictions for matches. This data is public and
-     *   read-only for all clients.
-     * @path
      *   /predictions/{predictionId}
      * @allow
-     *   (list) Any user, signed in or not, can query the list of predictions.
-     * @deny
-     *   (create) No client is permitted to create a new prediction document.
-     * @principle
-     *   Protects canonical data by making it publicly readable but centrally managed.
+     *   (read) Any user, signed in or not, can read data.
+     *   (write) Only signed-in users can create, update, or delete data.
      */
-    match /predictions/{predictionId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    match /{collection}/{docId}
+      where collection in ['leagues', 'teams', 'matches', 'predictions'] {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
-
+    
+    // -------------------------------------------------------------------------
+    // Collection: /system
+    // -------------------------------------------------------------------------
+    /**
+     * @description
+     *  Manages internal system metadata, like cron job timestamps.
+     *  Publicly readable, but only writable by authenticated users.
+     * @path
+     *  /system/{docId}
+     */
+    match /system/{docId} {
+        allow read: if true;
+        allow write: if isSignedIn();
+    }
   }
 }

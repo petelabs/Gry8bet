@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { Toaster } from "@/components/ui/toaster"
 import { ProPlanProvider } from '@/hooks/use-pro-plan';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: {
@@ -31,12 +32,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen flex flex-col")}>
-        <ProPlanProvider>
-            <Header />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <Toaster />
-            <InstallPrompt />
-        </ProPlanProvider>
+        <FirebaseClientProvider>
+          <ProPlanProvider>
+              <Header />
+              <main className="flex-1 flex flex-col">{children}</main>
+              <Toaster />
+              <InstallPrompt />
+          </ProPlanProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
