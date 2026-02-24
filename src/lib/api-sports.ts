@@ -1,15 +1,13 @@
-'use server';
-
 import type { ApiSportsPredictionResponse, ApiSportsFixtureResponse } from './types';
 import { format } from 'date-fns';
 
 const API_URL = 'https://v3.football.api-sports.io';
 
 async function fetchFromApiSports<T extends { errors: any[] | { [key: string]: string } }>(endpoint: string, params: Record<string, string>): Promise<T | null> {
-    const apiKey = process.env.API_SPORTS_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_API_SPORTS_KEY;
     if (!apiKey) {
         console.error('API Sports key is not configured in .env file.');
-        throw new Error('API key is not configured. Please add API_SPORTS_KEY to your .env file.');
+        throw new Error('API key is not configured. Please add NEXT_PUBLIC_API_SPORTS_KEY to your .env file.');
     }
 
     const queryString = new URLSearchParams(params).toString();
@@ -22,7 +20,7 @@ async function fetchFromApiSports<T extends { errors: any[] | { [key: string]: s
             headers: {
                 'x-apisports-key': apiKey,
             },
-            next: { revalidate: 86400 } // Revalidate every 24 hours
+            // Caching is handled by our cron job logic, so we fetch fresh data here.
         });
 
         const data = await response.json();
@@ -32,11 +30,9 @@ async function fetchFromApiSports<T extends { errors: any[] | { [key: string]: s
             return null;
         }
         
-        // The API returns errors in a top-level `errors` object/array.
         const hasErrors = Array.isArray(data.errors) ? data.errors.length > 0 : Object.keys(data.errors).length > 0;
         if (hasErrors) {
             console.error('API-Sports returned an error:', data.errors);
-            // Return the data with the error message so the UI can display it.
             return data as T;
         }
 
@@ -58,7 +54,6 @@ export async function getPrediction(fixtureId: string): Promise<ApiSportsPredict
 
 export async function getFixtures(): Promise<ApiSportsFixtureResponse | null> {
     const today = format(new Date(), 'yyyy-MM-dd');
-    // Fetch Not Started (NS) matches for today.
     return fetchFromApiSports<ApiSportsFixtureResponse>('fixtures', { date: today, status: 'NS' });
 }
 

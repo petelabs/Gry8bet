@@ -68,108 +68,100 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Match",
       "type": "object",
-      "description": "Represents an upcoming or past football match.",
+      "description": "Represents an upcoming or past football match, cached in Firestore.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Match entity."
+          "description": "Unique identifier for the Match entity, from API-Sports."
         },
-        "homeTeamId": {
-          "type": "string",
-          "description": "Reference to the ID of the home team participating in the match. (Relationship: Team 1:N Match)"
+        "homeTeam": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "logoUrl": {
+              "type": "string"
+            }
+          }
         },
-        "awayTeamId": {
-          "type": "string",
-          "description": "Reference to the ID of the away team participating in the match. (Relationship: Team 1:N Match)"
+        "awayTeam": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "logoUrl": {
+              "type": "string"
+            }
+          }
         },
-        "kickOffTime": {
+        "kickOff": {
           "type": "string",
           "description": "The scheduled date and time when the match kicks off.",
           "format": "date-time"
         },
-        "leagueId": {
+        "league": {
           "type": "string",
-          "description": "Reference to the ID of the League this match belongs to. (Relationship: League 1:N Match)"
+          "description": "Name of the league the match belongs to."
         },
         "stadium": {
           "type": "string",
           "description": "The name of the stadium where the match will be played."
-        },
-        "matchStatus": {
-          "type": "string",
-          "description": "The current status of the match (e.g., 'Scheduled', 'Live', 'Finished', 'Postponed')."
-        },
-        "finalHomeScore": {
-          "type": "number",
-          "description": "The final score for the home team, if the match is finished."
-        },
-        "finalAwayScore": {
-          "type": "number",
-          "description": "The final score for the away team, if the match is finished."
         }
       },
       "required": [
         "id",
-        "homeTeamId",
-        "awayTeamId",
-        "kickOffTime",
-        "leagueId",
-        "stadium",
-        "matchStatus"
+        "homeTeam",
+        "awayTeam",
+        "kickOff",
+        "league",
+        "stadium"
       ]
     },
     "Prediction": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Prediction",
       "type": "object",
-      "description": "Represents a forecast outcome and score for a specific football match.",
+      "description": "Represents a cached, AI-generated forecast for a specific football match.",
       "properties": {
-        "id": {
+        "summary": {
           "type": "string",
-          "description": "Unique identifier for the Prediction entity."
+          "description": "A brief, AI-generated summary of key insights supporting this prediction."
         },
-        "matchId": {
+        "mostConfidentPick": {
           "type": "string",
-          "description": "Reference to the ID of the Match this prediction is for. (Relationship: Match 1:N Prediction)"
+          "description": "The most confident pick derived from AI analysis for this match."
         },
-        "predictedOutcome": {
-          "type": "string",
-          "description": "The predicted outcome of the match (e.g., 'Home Win', 'Draw', 'Away Win')."
-        },
-        "predictedHomeScore": {
+        "confidenceScore": {
           "type": "number",
-          "description": "The predicted number of goals for the home team."
-        },
-        "predictedAwayScore": {
-          "type": "number",
-          "description": "The predicted number of goals for the away team."
+          "description": "A numerical score indicating the confidence level of the prediction (e.g., 0 to 100)."
         },
         "predictionTimestamp": {
           "type": "string",
           "description": "The timestamp when this prediction was generated or last updated.",
           "format": "date-time"
-        },
-        "confidenceScore": {
-          "type": "number",
-          "description": "A numerical score indicating the confidence level of the prediction (e.g., 0.0 to 1.0)."
-        },
-        "aiSummary": {
-          "type": "string",
-          "description": "A brief, AI-generated summary of key insights supporting this prediction."
-        },
-        "aiConfidentPick": {
-          "type": "string",
-          "description": "The most confident pick derived from AI analysis for this match."
         }
       },
       "required": [
-        "id",
-        "matchId",
-        "predictedOutcome",
-        "predictedHomeScore",
-        "predictedAwayScore",
+        "summary",
+        "mostConfidentPick",
+        "confidenceScore",
         "predictionTimestamp"
       ]
+    },
+    "System": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "System",
+      "type": "object",
+      "description": "Internal system documents.",
+      "properties": {
+        "lastSync": {
+          "type": "string",
+          "description": "Timestamp of the last successful data synchronization with the external API.",
+          "format": "date-time"
+        }
+      }
     }
   },
   "auth": {
@@ -182,58 +174,53 @@
   "firestore": {
     "structure": [
       {
-        "path": "/leagues/{leagueId}",
-        "definition": {
-          "entityName": "League",
-          "schema": {
-            "$ref": "#/backend/entities/League"
-          },
-          "description": "Collection of football leagues. Each document represents a single league and is publicly readable. No authorization dependencies on other collections."
-        }
-      },
-      {
-        "path": "/teams/{teamId}",
-        "definition": {
-          "entityName": "Team",
-          "schema": {
-            "$ref": "#/backend/entities/Team"
-          },
-          "description": "Collection of football teams. Each document represents a single team, includes its primary league ID, and is publicly readable. No authorization dependencies on other collections."
-        }
-      },
-      {
         "path": "/matches/{matchId}",
         "definition": {
           "entityName": "Match",
           "schema": {
             "$ref": "#/backend/entities/Match"
           },
-          "description": "Collection of football matches. Each document includes match details, references to home/away teams and league ID. CRITICALLY, this document also includes denormalized 'predictedOutcome', 'predictedHomeScore', 'predictedAwayScore', 'aiSummary', 'aiConfidentPick', and 'predictionTimestamp' fields from the primary associated prediction for efficient display in match listings. This supports QAPs by enabling a single query for matches with their key predictions. Publicly readable. No authorization dependencies on other collections.",
+          "description": "Cache of football matches for the day, fetched from API-Sports. Documents are overwritten daily. This collection is publicly readable.",
           "params": [
             {
               "name": "matchId",
-              "description": "The unique identifier for a specific football match."
+              "description": "The unique fixture ID from API-Sports."
             }
           ]
         }
       },
       {
-        "path": "/predictions/{predictionId}",
+        "path": "/predictions/{matchId}",
         "definition": {
           "entityName": "Prediction",
           "schema": {
             "$ref": "#/backend/entities/Prediction"
           },
-          "description": "Collection of football match predictions. Each document contains the full AI-generated prediction details for a specific match, linked via 'matchId'. This serves as the canonical storage for predictions, while key fields are denormalized into the /matches collection for optimized UI listing. Publicly readable. No authorization dependencies on other collections.",
+          "description": "Cache of AI-generated predictions. A document is created on-demand when a user requests an analysis for a specific match. Publicly readable.",
           "params": [
             {
-              "name": "predictionId",
-              "description": "The unique identifier for a specific match prediction."
+              "name": "matchId",
+              "description": "The unique fixture ID of the match this prediction is for."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/system/{docId}",
+        "definition": {
+          "entityName": "System",
+          "schema": {
+            "$ref": "#/backend/entities/System"
+          },
+          "description": "Stores internal system state, such as the timestamp of the last API data sync. Used by the client-side cron job to determine if a new data fetch is needed. Publicly readable, writable only by authenticated users.",
+          "params": [
+            {
+              "name": "docId",
+              "description": "The ID of the system document (e.g., 'syncState')."
             }
           ]
         }
       }
-    ],
-    "reasoning": "The recommended Firestore structure is designed to be highly efficient for read-heavy, public-facing content, prioritizing simple security rules and excellent query performance, especially for list views. \n\n**Authorization Independence:** All collections (`/leagues`, `/teams`, `/matches`, `/predictions`) are designed to be standalone at the root level. Access to any document within these collections does not depend on attributes of a parent document. This eliminates the need for `get()` calls in security rules, making rules atomic, predictable, and easier to debug. Since the application is for 'viewers to view content only', all data is assumed to be publicly readable, making authorization rules simply `allow read: if request.auth.uid != null;` (if authenticated access is desired) or `allow read: if true;` (for truly public access).\n\n**QAPs (Rules are not Filters) and Read Performance:**\nTo support the 'Match Listing' and 'Prediction Display' core features efficiently, a crucial denormalization strategy is employed. While `Prediction` entities exist in their own top-level collection (`/predictions/{predictionId}`), **key prediction attributes (e.g., `predictedOutcome`, `predictedHomeScore`, `predictedAwayScore`, `aiSummary`, `aiConfidentPick`, `predictionTimestamp`) are denormalized and embedded directly into the corresponding `Match` document (`/matches/{matchId}`).**\n\nThis denormalization directly addresses QAPs by allowing the primary 'Match Listing' view to fetch all necessary match details and their associated prediction insights with a *single query* to the `/matches` collection. Without this, fetching a list of matches and then their respective predictions would require an N+1 query pattern (one query for matches, then N queries for predictions), which is inefficient and costly for lists. By embedding, the security rules for `/matches` are simple (public read), and the client-side queries are highly optimized for display. The `/predictions` collection serves as the canonical source for full prediction details or for querying predictions independently, with the `matchId` field providing the link.\n\n**Structural Segregation:** Each top-level collection (`/leagues`, `/teams`, `/matches`, `/predictions`) holds documents of a single entity type and shares a homogeneous security posture (publicly readable). This avoids mixing data with different access requirements in the same collection, simplifying security rules and ensuring clarity of intent.\n\n**Access Modeling:**\n*   **Public Data:** All data in `/leagues`, `/teams`, `/matches`, and `/predictions` is considered public (or authenticated public) for viewing.\n*   **Hierarchical Paths:** Used for logical grouping and descriptive wildcards (e.g., `{leagueId}`), but not for authorization hierarchy in this viewer-only context.\n*   **Global Roles:** Not applicable for viewer functionality, but an `admin` role (e.g., `/roles_admin/{uid}`) would be used for write access if implemented.\n\nThis structure prioritizes client-side read performance, simplifies security rule management, and maintains a clear, scalable data model for the FootyForecast application."
+    ]
   }
 }
