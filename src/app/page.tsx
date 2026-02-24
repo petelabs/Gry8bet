@@ -2,7 +2,7 @@
     
 import { useEffect, useState, useMemo } from 'react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, getDoc, setDoc, writeBatch, serverTimestamp, collection, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { getFixtures } from '@/lib/api-sports';
 import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
 import type { Match } from '@/lib/types';
@@ -10,7 +10,7 @@ import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format as formatDate } from 'date-fns';
+import { isToday, parseISO } from 'date-fns';
 
 const SYNC_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
@@ -89,21 +89,25 @@ export default function Home() {
 
     const matchesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        // Fetch all matches for today
-        const today = formatDate(new Date(), 'yyyy-MM-dd');
+        // Fetch all matches from the cache and order them by kick-off time.
+        // We will filter for today's matches on the client-side to avoid timezone issues.
         return query(
             collection(firestore, 'matches'),
-            where('date', '==', today)
+            orderBy('kickOff')
         );
     }, [firestore]);
 
-    const { data: allTodayMatches, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
+    const { data: allMatchesFromDB, isLoading: isLoadingMatches, error: matchesError } = useCollection<Match>(matchesQuery);
 
     const upcomingMatches = useMemo(() => {
-        if (!allTodayMatches) return null;
-        // Filter out matches that have already started, based on the current time which updates every minute
-        return allTodayMatches.filter(match => new Date(match.kickOff) >= currentTime);
-    }, [allTodayMatches, currentTime]);
+        if (!allMatchesFromDB) return null;
+
+        // 1. Filter for matches that are "today" in the user's local timezone.
+        const matchesForToday = allMatchesFromDB.filter(match => isToday(parseISO(match.kickOff)));
+        
+        // 2. From that list, filter out matches that have already started.
+        return matchesForToday.filter(match => new Date(match.kickOff) >= currentTime);
+    }, [allMatchesFromDB, currentTime]);
 
 
     if (matchesError) {
