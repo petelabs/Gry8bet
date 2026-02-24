@@ -10,9 +10,9 @@ import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { startOfDay, endOfDay } from 'date-fns';
+import { endOfDay } from 'date-fns';
 
-const SYNC_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours
+const SYNC_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
 export default function Home() {
     const { user, isUserLoading } = useUser();
@@ -33,7 +33,7 @@ export default function Home() {
                     const lastSync = syncDoc.data().lastSync.toDate();
                     const now = new Date();
                     if (now.getTime() - lastSync.getTime() < SYNC_INTERVAL) {
-                        console.log('Sync skipped, last sync was less than 12 hours ago.');
+                        console.log(`Sync skipped, last sync was less than ${SYNC_INTERVAL / (60 * 1000)} minutes ago.`);
                         return;
                     }
                 }
@@ -61,7 +61,7 @@ export default function Home() {
                     });
                     toast({ title: "Sync Complete", description: `${matches.length} matches have been updated.` });
                 } else {
-                    toast({ title: "Sync Complete", description: "No upcoming matches found for today." });
+                    toast({ title: "Sync Complete", description: "No new upcoming matches found." });
                 }
                 
                 batch.set(syncStateRef, { lastSync: serverTimestamp() });
@@ -81,11 +81,13 @@ export default function Home() {
 
     const matchesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        const todayStart = startOfDay(new Date());
+        // Fetch matches from the current time until the end of today.
+        // This ensures already played matches are not shown.
+        const now = new Date();
         const todayEnd = endOfDay(new Date());
         return query(
             collection(firestore, 'matches'),
-            where('kickOff', '>=', Timestamp.fromDate(todayStart)),
+            where('kickOff', '>=', Timestamp.fromDate(now)),
             where('kickOff', '<=', Timestamp.fromDate(todayEnd))
         );
     }, [firestore]);
@@ -112,7 +114,7 @@ export default function Home() {
                 <div className="flex justify-center items-center py-24 text-muted-foreground bg-card rounded-lg border gap-4">
                     <LoaderCircle className="h-6 w-6 animate-spin" />
                     <h3 className="text-lg font-semibold text-foreground">
-                        {isSyncing ? 'Syncing latest match data...' : 'Loading matches...'}
+                        {isSyncing ? 'Syncing latest match data...' : 'Loading upcoming matches...'}
                     </h3>
                 </div>
             </div>
@@ -124,7 +126,7 @@ export default function Home() {
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No upcoming matches found for today.</h3>
-                    <p className="mt-1 text-sm">A data sync might be in progress if you just logged in. Please check back shortly.</p>
+                    <p className="mt-1 text-sm">The list is updated hourly. Please check back shortly for new matches.</p>
                 </div>
             </div>
         );
