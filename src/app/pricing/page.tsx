@@ -1,10 +1,12 @@
 'use client';
-import { Check, Star, BadgePercent, Trophy, Rocket, Crown, ShieldCheck } from 'lucide-react';
+import { Check, Star, BadgePercent, Trophy, Rocket, Crown, ShieldCheck, WalletCards, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const WHATSAPP_NUMBER = '255987066051'; // IMPORTANT: Replace with your number if this is incorrect.
 
 const plans = [
   {
@@ -39,16 +41,25 @@ const plans = [
     price: '$5',
     period: '/ month',
     predictions: '40 AI Predictions',
-    features: ['All Pro features', 'Monthly performance review', 'Ad-free experience'],
+    features: ['All Pro features', 'Ad-free experience', 'Performance review'],
     color: 'border-green-500',
     icon: <BadgePercent className="h-6 w-6 mb-4 text-green-500" />,
   },
   {
     name: 'Master',
-    price: '$20',
+    price: '$10',
     period: '/ month',
     predictions: '150+ AI Predictions',
-    features: ['90-99% win probability insights', '7-day bonus on renewal', 'Next month renewal discount'],
+    features: ['All Expert features', 'Deeper performance insights', 'Next month renewal discount'],
+    color: 'border-orange-500',
+    icon: <KeyRound className="h-6 w-6 mb-4 text-orange-500" />,
+  },
+  {
+    name: 'VIP',
+    price: '$20',
+    period: '/ month',
+    predictions: 'All Master Predictions',
+    features: ['90-99% win probability insights', '7-day bonus on renewal', 'All Master features'],
     color: 'border-yellow-500',
     highlight: true,
     icon: <Crown className="h-6 w-6 mb-4 text-yellow-500" />,
@@ -66,7 +77,6 @@ const plans = [
 
 
 export default function PricingPage() {
-
   return (
     <div className="container py-12 sm:py-16">
       <div className="max-w-2xl mx-auto text-center">
@@ -114,13 +124,60 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button size="lg" className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
-                Choose {plan.name}
-              </Button>
+                <Button asChild size="lg" className="w-full" variant={plan.highlight ? 'default' : 'outline'}>
+                    <Link href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hello! I'd like to subscribe to the ${plan.name} plan.`)}`} target="_blank" rel="noopener noreferrer">
+                        Choose {plan.name}
+                    </Link>
+                </Button>
             </CardFooter>
           </Card>
         ))}
       </div>
+
+        <div className="mt-20 text-center">
+            <h2 className="text-3xl font-bold tracking-tight">How to Subscribe</h2>
+            <p className="mt-2 text-lg text-muted-foreground">Follow these simple steps to unlock your plan.</p>
+        </div>
+
+        <Card className="max-w-2xl mx-auto mt-8">
+            <CardHeader className="text-center">
+                <div className="flex justify-center">
+                    <WalletCards className="h-8 w-8 mb-2 text-primary" />
+                </div>
+                <CardTitle>Payment Instructions</CardTitle>
+                <CardDescription>
+                    We use a trusted manual payment process to keep things simple for you.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+                <ol className="list-decimal list-inside space-y-4">
+                    <li>
+                        Click the <strong>"Choose Plan"</strong> button for your desired subscription. This will open a WhatsApp chat with us.
+                    </li>
+                    <li>
+                        Send the pre-filled message to let us know which plan you've chosen.
+                    </li>
+                    <li>
+                        Make your payment to the following Airtel Money account:
+                        <div className="font-mono text-base bg-muted p-3 rounded-md text-center my-2 select-all">
+                            [Your Airtel Money Number Here]
+                        </div>
+                    </li>
+                    <li>
+                        After paying, please send a screenshot of the transaction confirmation back to us in the same WhatsApp chat.
+                    </li>
+                    <li>
+                        Once we verify your payment, we will activate your Pro subscription immediately. Your trust is our priority, and we'll ensure a smooth process.
+                    </li>
+                </ol>
+            </CardContent>
+            <CardFooter>
+                <p className="text-xs text-muted-foreground mx-auto">
+                    If you have any questions, feel free to ask us on WhatsApp. We're here to help!
+                </p>
+            </CardFooter>
+        </Card>
+
        <div className="text-center mt-12">
             <p className="text-sm text-muted-foreground">
                 Want to go back? <Link href="/" className="underline hover:text-primary">Return to matches</Link>.
