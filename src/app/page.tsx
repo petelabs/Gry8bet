@@ -2,7 +2,7 @@
     
 import { useEffect, useState, useMemo } from 'react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, getDoc, setDoc, writeBatch, serverTimestamp, collection, query, where, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, writeBatch, serverTimestamp, collection, query, where } from 'firebase/firestore';
 import { getFixtures } from '@/lib/api-sports';
 import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
 import type { Match } from '@/lib/types';
@@ -87,8 +87,8 @@ export default function Home() {
         const todayEnd = endOfDay(new Date());
         return query(
             collection(firestore, 'matches'),
-            where('kickOff', '>=', Timestamp.fromDate(now)),
-            where('kickOff', '<=', Timestamp.fromDate(todayEnd))
+            where('kickOff', '>=', now.toISOString()),
+            where('kickOff', '<=', todayEnd.toISOString())
         );
     }, [firestore]);
 
