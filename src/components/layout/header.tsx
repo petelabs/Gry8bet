@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, ShieldCheck, LogOut, Settings, BookUser, FileText } from "lucide-react";
+import { Menu, ShieldCheck, LogOut, Settings, BookUser, FileText, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "../ui/sheet";
@@ -47,6 +47,15 @@ function UserNav() {
             </p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+           <DropdownMenuItem asChild>
+             <Link href="/account">
+                <User className="mr-2 h-4 w-4" />
+                <span>Account</span>
+             </Link>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut()}>
           <LogOut className="mr-2 h-4 w-4" />
@@ -139,7 +148,7 @@ export function Header() {
                         </SheetHeader>
                         <div className="py-6">
                         <nav className="flex flex-col gap-4 text-lg font-medium">
-                            {[...navLinks, { href: "/pricing", label: "Pricing" }].map(link => (
+                            {[...navLinks, { href: "/pricing", label: "Plans" }].map(link => (
                                 <Link key={link.href} href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
                                     {link.label}
                                 </Link>

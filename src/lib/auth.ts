@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeFirebase } from '@/firebase';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, UserCredential, updateProfile } from 'firebase/auth';
 
 const { auth } = initializeFirebase();
 const provider = new GoogleAuthProvider();
@@ -34,6 +34,19 @@ export async function signInWithEmail(email: string, password: string): Promise<
         console.error("Error signing in with email", error);
         throw error;
     }
+}
+
+export async function updateUserProfile({ displayName }: { displayName: string }) {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("No user is signed in to update.");
+  }
+  try {
+    await updateProfile(user, { displayName });
+  } catch (error) {
+    console.error("Error updating profile", error);
+    throw error;
+  }
 }
 
 

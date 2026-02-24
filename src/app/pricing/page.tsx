@@ -1,12 +1,12 @@
 'use client';
-import { Check, Star, BadgePercent, Trophy, Rocket, Crown, ShieldCheck, WalletCards, KeyRound } from 'lucide-react';
+import { Check, Star, BadgePercent, Trophy, Rocket, Crown, ShieldCheck, WalletCards, KeyRound, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-const WHATSAPP_NUMBER = '255987066051'; // IMPORTANT: Replace with your number if this is incorrect.
+const WHATSAPP_NUMBER = '265987066051';
 const MWK_EXCHANGE_RATE = 1730;
 
 const plans = [
@@ -81,9 +81,9 @@ export default function PricingPage() {
   return (
     <div className="container py-12 sm:py-16">
       <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Our Pricing Plans</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Choose Your Plan</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Choose a plan that fits your strategy. Get the ultimate edge in your betting journey.
+          Select the perfect plan to get the ultimate edge in your betting journey.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export default function PricingPage() {
           <BadgePercent className="h-4 w-4" />
           <AlertTitle>New User? Get 50% Off!</AlertTitle>
           <AlertDescription>
-            For a limited time, all new users get a 50% discount on any plan for the first month. Pay within 2 days of signing up to claim your offer!
+            For a limited time, all new users get a 50% discount on any plan for the first 48 hours after signing up. Claim your offer now!
           </AlertDescription>
         </Alert>
 
@@ -152,16 +152,16 @@ export default function PricingPage() {
                 </div>
                 <CardTitle>Payment Instructions</CardTitle>
                 <CardDescription>
-                    We use a trusted manual payment process to keep things simple for you.
+                    We use a trusted manual process via WhatsApp & Airtel Money.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
                 <ol className="list-decimal list-inside space-y-4">
                     <li>
-                        Click the <strong>"Choose Plan"</strong> button for your desired subscription. This will open a WhatsApp chat with us.
+                        Click the <strong>"Choose Plan"</strong> button for your desired subscription. This opens a WhatsApp chat with a pre-filled message.
                     </li>
                     <li>
-                        Send the pre-filled message to let us know which plan you've chosen.
+                        Send the message to let us know which plan you've chosen. To build your trust, we guarantee a response within our business hours.
                     </li>
                     <li>
                         Make your payment to the following Airtel Money account:
@@ -173,12 +173,23 @@ export default function PricingPage() {
                         After paying, please send a screenshot of the transaction confirmation back to us in the same WhatsApp chat.
                     </li>
                     <li>
-                        Once we verify your payment, we will activate your Pro subscription immediately. Your trust is our priority, and we'll ensure a smooth process.
+                        Once we verify your payment, we will activate your chosen plan immediately and confirm with you. Your security and trust are our priority.
                     </li>
                 </ol>
             </CardContent>
-            <CardFooter>
-                <p className="text-xs text-muted-foreground mx-auto">
+            <CardFooter className="flex-col items-start pt-6 border-t gap-4">
+                 <div className="w-full">
+                    <h4 className="font-semibold flex items-center gap-2 mb-2"><Clock className="h-4 w-4" /> Verification & Support Hours</h4>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Monday - Friday</span>
+                        <span className="font-medium">2:00 PM - 11:50 PM</span>
+                    </div>
+                     <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Saturday - Sunday</span>
+                        <span className="font-medium">24 Hours</span>
+                    </div>
+                 </div>
+                <p className="text-xs text-muted-foreground mx-auto pt-4 border-t w-full text-center">
                     If you have any questions, feel free to ask us on WhatsApp. We're here to help!
                 </p>
             </CardFooter>
