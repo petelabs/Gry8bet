@@ -1,10 +1,8 @@
 'use client';
 
-import { doc } from 'firebase/firestore';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card';
 import { Shield, LoaderCircle } from 'lucide-react';
 import { AIInsight } from '@/components/matches/ai-insight';
 import { MatchDetails } from '@/components/matches/match-details';
@@ -12,26 +10,53 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { BetNowCard } from '@/components/betting/bet-now-card';
 import type { Match } from '@/lib/types';
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { addMinutes } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { getFixtureById } from '@/lib/api-sports';
+import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
+import { ShareCard } from '@/components/sharing/share-card';
 
-// Note: generateMetadata is a server-only function. In a client component,
-// you can set the document title using useEffect, but it's less ideal for SEO.
-// For this iteration, we'll rely on the default title from layout.tsx.
 
 export default function MatchPage() {
   const params = useParams();
   const id = typeof params.id === 'string' ? params.id : '';
-  const firestore = useFirestore();
-
-  const matchRef = useMemoFirebase(() => {
-    if (!firestore || !id) return null;
-    return doc(firestore, 'matches', id);
-  }, [firestore, id]);
-
-  const { data: match, isLoading, error } = useDoc<Match>(matchRef);
+  
+  const [match, setMatch] = useState<Match | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    if (!id) {
+        setIsLoading(false);
+        setError("Match ID is missing.");
+        return;
+    };
+
+    const fetchMatch = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const fixtureData = await getFixtureById(id);
+
+            if (!fixtureData || fixtureData.results === 0) {
+                setMatch(null);
+            } else {
+                const fetchedMatch = mapApiFixtureToMatch(fixtureData.response[0]);
+                setMatch(fetchedMatch);
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'An unknown error occurred.';
+            setError(message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    fetchMatch();
+  }, [id]);
+
 
   useEffect(() => {
     if (!match) return;
@@ -68,9 +93,9 @@ export default function MatchPage() {
       <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>API Error</AlertTitle>
           <AlertDescription>
-            Could not load match data: {error.message}
+            Could not load match data: {error}
           </AlertDescription>
         </Alert>
       </div>
@@ -146,6 +171,7 @@ export default function MatchPage() {
         </Card>
 
         <BetNowCard />
+        <ShareCard />
       </div>
     </div>
   );

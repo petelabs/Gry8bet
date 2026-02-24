@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Match } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Sparkles, LoaderCircle, Zap, ShieldCheck } from 'lucide-react';
@@ -11,8 +11,6 @@ import { useProPlan } from '@/hooks/use-pro-plan';
 import { ProModal } from '@/components/pro-modal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AIInsightProps {
   match: Match;
@@ -30,7 +28,6 @@ export function AIInsight({ match }: AIInsightProps) {
   const [showProModal, setShowProModal] = useState(false);
   const { isPro } = useProPlan();
   const { toast } = useToast();
-  const firestore = useFirestore();
 
   const handleGenerateInsight = async () => {
     if (!isPro) {
@@ -41,31 +38,15 @@ export function AIInsight({ match }: AIInsightProps) {
     setResult(null);
 
     try {
-        const predictionRef = doc(firestore, 'predictions', match.id);
-        const cachedPrediction = await getDoc(predictionRef);
-
-        if (cachedPrediction.exists()) {
-            // We have a cached result, let's use it.
-            // In a real app, we might check a timestamp here to see if it's stale.
-            setResult(cachedPrediction.data() as AIResult);
-            toast({ title: "Loaded analysis from cache." });
-        } else {
-            // No cache, fetch from AI
-            const apiResult = await getMatchPredictionSummary({
-                matchId: match.id,
-                homeTeamName: match.homeTeam.name,
-                awayTeamName: match.awayTeam.name,
-                league: match.league,
-            });
-
-            // Save to cache for next time
-            await setDoc(predictionRef, {
-                ...apiResult,
-                predictionTimestamp: serverTimestamp(),
-            });
-            
-            setResult(apiResult);
-        }
+        const apiResult = await getMatchPredictionSummary({
+            matchId: match.id,
+            homeTeamName: match.homeTeam.name,
+            awayTeamName: match.awayTeam.name,
+            league: match.league,
+        });
+        
+        setResult(apiResult);
+        
     } catch (error) {
       console.error('AI Insight Error:', error);
       const errorMessage = error instanceof Error ? error.message : "There was a problem getting the AI summary. Please try again later.";
@@ -78,20 +59,6 @@ export function AIInsight({ match }: AIInsightProps) {
       setLoading(false);
     }
   };
-
-  // Automatically fetch cached insight on load if user is pro
-  useEffect(() => {
-    const fetchCachedInsight = async () => {
-      if (isPro && firestore) {
-        const predictionRef = doc(firestore, 'predictions', match.id);
-        const cachedPrediction = await getDoc(predictionRef);
-        if (cachedPrediction.exists()) {
-          setResult(cachedPrediction.data() as AIResult);
-        }
-      }
-    };
-    fetchCachedInsight();
-  }, [isPro, firestore, match.id]);
 
   return (
     <div className="space-y-4">
