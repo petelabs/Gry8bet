@@ -22,7 +22,7 @@ async function fetchFromApiSports<T extends { errors: any[] | { [key: string]: s
             headers: {
                 'x-apisports-key': apiKey,
             },
-            next: { revalidate: 3600 } // Revalidate every hour
+            next: { revalidate: 86400 } // Revalidate every 24 hours
         });
 
         const data = await response.json();

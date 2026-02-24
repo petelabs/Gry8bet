@@ -12,12 +12,14 @@ interface MatchDetailsProps {
 
 export function MatchDetails({ match }: MatchDetailsProps) {
   const [kickOffTime, setKickOffTime] = useState<string | null>(null);
-  const kickOffDate = new Date(match.kickOff);
+  const [kickOffDay, setKickOffDay] = useState<string | null>(null);
 
   useEffect(() => {
+    const kickOffDate = new Date(match.kickOff);
     // This ensures the time is formatted on the client, avoiding hydration mismatches.
     setKickOffTime(format(kickOffDate, 'p'));
-  }, [kickOffDate]);
+    setKickOffDay(format(kickOffDate, 'EEEE, MMM d, yyyy'));
+  }, [match.kickOff]);
 
   return (
     <CardContent className="space-y-4">
@@ -32,7 +34,7 @@ export function MatchDetails({ match }: MatchDetailsProps) {
             </div>
              <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-primary" />
-                <span>{format(kickOffDate, 'EEEE, MMM d, yyyy')}</span>
+                <span>{kickOffDay ?? '...'}</span>
             </div>
             <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
