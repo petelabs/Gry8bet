@@ -39,6 +39,7 @@ export function AIInsight({ match }: AIInsightProps) {
 
     try {
       const apiResult = await getMatchPredictionSummary({
+        matchId: match.id,
         homeTeamName: match.homeTeam.name,
         awayTeamName: match.awayTeam.name,
         league: match.league,
@@ -46,10 +47,11 @@ export function AIInsight({ match }: AIInsightProps) {
       setResult(apiResult);
     } catch (error) {
       console.error('AI Insight Error:', error);
+      const errorMessage = error instanceof Error ? error.message : "There was a problem getting the AI summary. Please try again later.";
       toast({
         variant: "destructive",
         title: "Error generating insight",
-        description: "There was a problem getting the AI summary. Please try again later.",
+        description: errorMessage,
       })
     } finally {
       setLoading(false);

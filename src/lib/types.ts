@@ -24,3 +24,50 @@ export type BettingSite = {
   continents: Continent[];
   description: string;
 };
+
+// Types for API-Sports Prediction Response
+export type ApiSportsPrediction = {
+  winner: {
+    id: number | null;
+    name: string | null;
+    comment: string | null;
+  };
+  advice: string;
+  percent: {
+    home: string;
+    draw: string;
+    away: string;
+  };
+};
+
+export type ApiSportsH2H = {
+  fixture: {
+    id: number;
+    // other fixture details
+  };
+  teams: {
+    home: { id: number; name: string; winner: boolean | null; };
+    away: { id: number; name: string; winner: boolean | null; };
+  };
+};
+
+export type ApiSportsResponseData = {
+  predictions: ApiSportsPrediction;
+  teams: {
+    home: { id: number; name: string; last_5: { form: string } };
+    away: { id: number; name: string; last_5: { form: string } };
+  };
+  comparison: {
+    // comparison data
+    [key: string]: any;
+  };
+  h2h: ApiSportsH2H[];
+};
+
+export type ApiSportsPredictionResponse = {
+  get: string;
+  parameters: { fixture: string };
+  errors: any[];
+  results: number;
+  response: ApiSportsResponseData[];
+};
