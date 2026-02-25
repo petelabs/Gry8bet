@@ -7,6 +7,7 @@ import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AgeVerificationModal } from '@/components/legal/age-verification-modal';
 import { ProPlanProvider } from '@/hooks/use-pro-plan';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="theme-color" content="#2E4E8C" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -36,15 +37,22 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen flex flex-col")}>
-        <ProPlanProvider>
-            <FirebaseClientProvider>
-                <Header />
-                <main className="flex-1 flex flex-col">{children}</main>
-                <Toaster />
-                <InstallPrompt />
-                <AgeVerificationModal />
-            </FirebaseClientProvider>
-        </ProPlanProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ProPlanProvider>
+              <FirebaseClientProvider>
+                  <Header />
+                  <main className="flex-1 flex flex-col">{children}</main>
+                  <Toaster />
+                  <InstallPrompt />
+                  <AgeVerificationModal />
+              </FirebaseClientProvider>
+          </ProPlanProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

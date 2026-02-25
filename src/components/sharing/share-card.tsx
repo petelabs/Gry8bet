@@ -6,15 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Twitter, Facebook, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export function ShareCard() {
+interface ShareCardProps {
+  path?: string;
+  text?: string;
+}
+
+export function ShareCard({ path = '', text }: ShareCardProps) {
   const { toast } = useToast();
-  const [shareUrl, setShareUrl] = useState('https://gry8.bet');
-  const shareText = "Check out Gry8bet for AI-powered football predictions and betting insights! #Gry8bet #AI #Football";
+  const [shareUrl, setShareUrl] = useState('');
+  const shareText = text || "Check out Gry8bet for AI-powered football predictions and betting insights! #Gry8bet #AI #Football";
 
   useEffect(() => {
-    // This ensures the window object is accessed only on the client-side, after initial render.
-    setShareUrl(window.location.origin);
-  }, []);
+    // This ensures the window object is accessed only on the client-side,
+    // and constructs the full URL from the origin and the provided path.
+    setShareUrl(`${window.location.origin}${path}`);
+  }, [path]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {

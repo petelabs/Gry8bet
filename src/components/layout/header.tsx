@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "./theme-toggle";
 
 function UserNav() {
   const { user } = useUser();
@@ -171,6 +172,7 @@ export function Header() {
                 </Link>
             </Button>
             <UserNav />
+            <ThemeToggle />
             <SettingsNav />
         </div>
       </div>

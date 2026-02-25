@@ -22,16 +22,17 @@ import { ProModal } from '@/components/pro-modal';
 interface MatchListProps {
   matches: Match[];
   leagues: string[];
+  highConfidencePicks: Set<string>;
 }
 
-export function MatchList({ matches, leagues }: MatchListProps) {
+export function MatchList({ matches, leagues, highConfidencePicks }: MatchListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('all');
   
   // Freemium search logic
   const [searchCount, setSearchCount] = useState(0);
   const [showProModal, setShowProModal] = useState(false);
-  const { isPro } = useProPlan(); // Mock value, always false for now
+  const { isPro } = useProPlan();
   
   useEffect(() => {
     // Load search count from session storage on component mount
@@ -144,7 +145,7 @@ export function MatchList({ matches, leagues }: MatchListProps) {
         {filteredMatches.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
             {filteredMatches.map(match => (
-              <MatchCard key={match.id} match={match} />
+              <MatchCard key={match.id} match={match} isHighConfidence={highConfidencePicks.has(match.id)} />
             ))}
           </div>
         ) : (

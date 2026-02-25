@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getUpcomingEvents } from '@/lib/the-sports-db';
-import type { Match } from '@/lib/types';
+import type { Match, Prediction } from '@/lib/types';
 import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
@@ -13,6 +13,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection, writeBatch, serverTimestamp, getDocs } from 'firebase/firestore';
 import { isBefore, subHours } from 'date-fns';
+import { useProPlan } from '@/hooks/use-pro-plan';
 
 export default function Home() {
     const { toast } = useToast();
@@ -21,6 +22,7 @@ export default function Home() {
     // --- Caching & State Management ---
     const { user } = useUser();
     const firestore = useFirestore();
+    const { isPro } = useProPlan();
 
     const [isSyncing, setIsSyncing] = useState(false);
     const [componentError, setComponentError] = useState<string | null>(null);
@@ -30,13 +32,16 @@ export default function Home() {
     // Memoize Firestore references
     const syncStateRef = useMemoFirebase(() => firestore ? doc(firestore, 'system', 'syncState') : null, [firestore]);
     const matchesCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'matches') : null, [firestore]);
+    const predictionsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'predictions') : null, [firestore]);
     
     // Subscribe to sync state and matches collection
     const { data: syncState, isLoading: isSyncLoading } = useDoc(syncStateRef);
     const { data: cachedMatches, isLoading: areMatchesLoading, error: matchesError } = useCollection<Match>(matchesCollectionRef);
+    const { data: cachedPredictions } = useCollection<Prediction>(predictionsCollectionRef);
 
     // Effect to handle one-time affiliate ad
     useEffect(() => {
+        if (isPro) return; // Don't show ads for Pro users
         const adShown = localStorage.getItem('affiliate_ad_shown');
         if (!adShown) {
             const timer = setTimeout(() => {
@@ -54,7 +59,7 @@ export default function Home() {
             }, 3000);
             return () => clearTimeout(timer);
         }
-    }, [toast]);
+    }, [toast, isPro]);
 
     // Effect to sync data to Firestore if cache is stale (for authenticated users only)
     useEffect(() => {
@@ -134,6 +139,15 @@ export default function Home() {
     // The app is loading if any of the data sources are still fetching, AND we don't have any matches to show yet.
     const isLoading = (areMatchesLoading || isSyncing || isFallbackLoading) && matches.length === 0;
 
+    const highConfidencePicks = useMemo(() => {
+        if (!cachedPredictions) return new Set<string>();
+        return new Set(
+            cachedPredictions
+                .filter(p => p.confidenceScore >= 85)
+                .map(p => p.id)
+        );
+    }, [cachedPredictions]);
+
     if (error) {
          return (
              <div className="container py-6 sm:py-8">
@@ -169,7 +183,7 @@ export default function Home() {
                     <p className="mt-1 text-sm">There are no new matches scheduled in the top leagues. Please check back later.</p>
                 </div>
                  <div className="mt-8">
-                    <ShareCard />
+                    {!isPro && <ShareCard />}
                 </div>
             </div>
         );
@@ -180,11 +194,13 @@ export default function Home() {
     return (
         <div className="container py-6 sm:py-8">
             <div className="space-y-8">
-                <MatchList matches={matches} leagues={leagues} />
-                <div className="grid md:grid-cols-2 gap-8">
-                    <BetNowCard />
-                    <ShareCard />
-                </div>
+                <MatchList matches={matches} leagues={leagues} highConfidencePicks={highConfidencePicks} />
+                {!isPro && (
+                  <div className="grid md:grid-cols-2 gap-8">
+                      <BetNowCard />
+                      <ShareCard />
+                  </div>
+                )}
             </div>
         </div>
     );

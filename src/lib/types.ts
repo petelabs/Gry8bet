@@ -27,6 +27,22 @@ export type BettingSite = {
   description: string;
 };
 
+// This is the data that is cached in Firestore from the AI Flow
+export type Prediction = {
+  id: string; // This is the matchId, added by the useCollection hook
+  summary: string;
+  mostConfidentPick: string;
+  confidenceScore: number;
+  bothTeamsToScore: string;
+  overUnder2_5: string;
+  headToHead: {
+    homeWins: number;
+    awayWins: number;
+    draws: number;
+  };
+  predictionTimestamp: any; // Firebase Timestamp
+}
+
 
 // Types for TheSportsDB API
 export interface TheSportsDBEvent {

@@ -33,14 +33,16 @@ function formatTeamForm(events: TheSportsDBEvent[], teamName: string): string {
 
 
 // Helper function to format H2H stats
-function formatHeadToHead(h2h: TheSportsDBEvent[], homeTeamName: string, awayTeamName: string): string {
-    if (!h2h || h2h.length === 0) return 'No recent head-to-head data available.';
+function getHeadToHeadStats(h2h: TheSportsDBEvent[], homeTeamName: string, awayTeamName: string) {
+    if (!h2h || h2h.length === 0) return { homeWins: 0, awayWins: 0, draws: 0, summary: 'No recent head-to-head data available.' };
     
     let homeWins = 0;
     let awayWins = 0;
     let draws = 0;
 
-    h2h.slice(0, 5).forEach(match => { // Limit to last 5 for summary
+    const recentH2h = h2h.slice(0, 5); // Limit to last 5 for summary
+
+    recentH2h.forEach(match => {
         if (match.intHomeScore === match.intAwayScore) {
             draws++;
         } else if (match.strHomeTeam === homeTeamName && match.intHomeScore > match.intAwayScore) {
@@ -52,7 +54,12 @@ function formatHeadToHead(h2h: TheSportsDBEvent[], homeTeamName: string, awayTea
         }
     });
 
-    return `In the last ${Math.min(5, h2h.length)} meetings, ${homeTeamName} won ${homeWins}, ${awayTeamName} won ${awayWins}, with ${draws} draws.`;
+    return {
+        homeWins,
+        awayWins,
+        draws,
+        summary: `In the last ${recentH2h.length} meetings, ${homeTeamName} won ${homeWins}, ${awayTeamName} won ${awayWins}, with ${draws} draws.`
+    }
 }
 
 // Tool to get historical match data from TheSportsDB
@@ -68,7 +75,12 @@ const getExpertMatchAnalysis = ai.defineTool(
     }),
     outputSchema: z.object({
       teamForm: z.string().describe("Analysis of both teams' recent performance and form."),
-      headToHeadStats: z.string().describe('Summary of the head-to-head results.'),
+      headToHeadStats: z.object({
+          summary: z.string().describe('Text summary of the head-to-head results.'),
+          homeWins: z.number().describe('Number of home team wins in recent H2H matches.'),
+          awayWins: z.number().describe('Number of away team wins in recent H2H matches.'),
+          draws: z.number().describe('Number of draws in recent H2H matches.'),
+      }),
     }),
   },
   async ({ homeTeamId, awayTeamId, homeTeamName, awayTeamName }) => {
@@ -84,7 +96,7 @@ const getExpertMatchAnalysis = ai.defineTool(
     const awayForm = formatTeamForm(awayFormEvents, awayTeamName);
     
     const teamForm = `${homeForm} ${awayForm}`;
-    const headToHeadStats = formatHeadToHead(h2hEvents, homeTeamName, awayTeamName);
+    const headToHeadStats = getHeadToHeadStats(h2hEvents, homeTeamName, awayTeamName);
 
     return {
       teamForm,
@@ -111,6 +123,11 @@ const GetMatchPredictionSummaryOutputSchema = z.object({
   confidenceScore: z.number().int().min(0).max(100).describe('A confidence score for the pick, from 0 (very low) to 100 (very high), based on your analysis of the form and H2H data.'),
   bothTeamsToScore: z.string().describe('Prediction for "Both Teams to Score" (e.g., "Yes" or "No"). Provide a brief reason.'),
   overUnder2_5: z.string().describe('Prediction for "Over/Under 2.5 Goals" (e.g., "Over" or "Under"). Provide a brief reason.'),
+  headToHead: z.object({
+    homeWins: z.number().int().describe('Number of wins for the home team in recent H2H matches.'),
+    awayWins: z.number().int().describe('Number of wins for the away team in recent H2H matches.'),
+    draws: z.number().int().describe('Number of draws in recent H2H matches.'),
+  }).describe('Structured data of recent head-to-head results.'),
 }).describe('Output containing the generated prediction summary and other popular market picks.');
 
 
@@ -125,7 +142,7 @@ const prompt = ai.definePrompt({
 
 First, you MUST use the getExpertMatchAnalysis tool with the provided team IDs to fetch detailed historical data for the match.
 
-Then, synthesize the information from the tool. Your analysis should be sharp, insightful, and avoid generic statements. There are no betting odds available, so you must base your prediction entirely on the historical data (team form and head-to-head results).
+Then, synthesize the information from the tool. Your analysis should be sharp, insightful, and avoid generic statements. When analyzing team form, consider what the recent results imply (e.g., "a 5-game winning streak shows strong momentum" or "failing to score in 3 of the last 5 games is a major concern"). When analyzing head-to-head, note any patterns of dominance. There are no betting odds available, so you must base your prediction entirely on the historical data (team form and head-to-head results).
 
 Match Details for context:
 - Home Team: {{{homeTeamName}}}
@@ -133,11 +150,12 @@ Match Details for context:
 - League: {{{league}}}
 
 Generate the following outputs:
-1.  \`summary\`: A concise summary (2-3 paragraphs) that explains the reasoning behind your main prediction.
+1.  \`summary\`: A concise summary (2-3 paragraphs) that explains the reasoning behind your main prediction, written like a professional pundit.
 2.  \`mostConfidentPick\`: Determine the most likely match result (e.g., "Home Win", "Draw", "Away Win"). Do not use other markets like "Both Teams to Score" for this field.
 3.  \`confidenceScore\`: Generate a score from 0 to 100 based on how confident you are in your 'mostConfidentPick'.
 4.  \`bothTeamsToScore\`: Predict if both teams will score ("Yes" or "No") and add a very brief (1-sentence) justification. Example: "Yes - both teams have strong attacks and leaky defenses."
-5.  \`overUnder2_5\`: Predict if the total goals will be "Over" or "Under" 2.5, and add a very brief (1-sentence) justification. Example: "Over - recent matches for both teams have been high-scoring."`,
+5.  \`overUnder2_5\`: Predict if the total goals will be "Over" or "Under" 2.5, and add a very brief (1-sentence) justification. Example: "Over - recent matches for both teams have been high-scoring."
+6.  \`headToHead\`: Using the structured data from the tool, populate this field with the number of wins for each team and the number of draws.`,
 });
 
 const getMatchPredictionSummaryFlow = ai.defineFlow(

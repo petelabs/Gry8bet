@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 
 interface MatchCardProps {
   match: Match;
+  isHighConfidence?: boolean;
 }
 
-export function MatchCard({ match }: MatchCardProps) {
+export function MatchCard({ match, isHighConfidence = false }: MatchCardProps) {
   const [kickOffTime, setKickOffTime] = useState<string | null>(null);
   const [kickOffDay, setKickOffDay] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -55,6 +56,11 @@ export function MatchCard({ match }: MatchCardProps) {
         {isLive && (
           <Badge variant="destructive" className="absolute top-2 left-2 animate-pulse z-10">
             Live
+          </Badge>
+        )}
+        {isHighConfidence && (
+          <Badge variant="default" className="absolute top-2 right-2 z-10">
+            🔥 High Confidence
           </Badge>
         )}
         <CardContent className="p-4 space-y-4">

@@ -14,6 +14,7 @@ import { addMinutes } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { getEventDetailsById } from '@/lib/the-sports-db';
 import { ShareCard } from '@/components/sharing/share-card';
+import { useProPlan } from '@/hooks/use-pro-plan';
 
 
 export default function MatchPage() {
@@ -24,6 +25,7 @@ export default function MatchPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLive, setIsLive] = useState(false);
+  const { isPro } = useProPlan();
 
   useEffect(() => {
     if (!id) {
@@ -162,7 +164,12 @@ export default function MatchPage() {
           </CardContent>
         </Card>
 
-        <ShareCard />
+        {!isPro && (
+          <ShareCard
+            path={`/match/${match.id}`}
+            text={`Check out the AI prediction for ${match.homeTeam.name} vs ${match.awayTeam.name} on Gry8bet!`}
+          />
+        )}
       </div>
     </div>
   );
