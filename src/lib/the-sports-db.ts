@@ -17,6 +17,14 @@ const POPULAR_LEAGUES = [
     { id: '4481', name: 'UEFA Europa League' },
     { id: '4767', name: 'Copa Libertadores' },
     { id: '4421', name: 'Japanese J League' },
+    { id: '4329', name: 'English Championship' },
+    { id: '4337', name: 'Dutch Eredivisie' },
+    { id: '4344', name: 'Portuguese Primeira Liga' },
+    { id: '4350', name: 'Mexican Liga MX' },
+    { id: '4347', name: 'Argentinian Liga Profesional' },
+    { id: '5018', name: 'UEFA Europa Conference League'},
+    { id: '4356', name: 'Australian A-League'},
+    { id: '4358', name: 'Turkish Super Lig'},
 ];
 
 

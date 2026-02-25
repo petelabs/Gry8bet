@@ -61,7 +61,7 @@ export default function Home() {
         }
 
         const lastSync = syncState?.lastSync?.toDate();
-        const needsSync = !lastSync || isBefore(lastSync, subHours(new Date(), 3));
+        const needsSync = !lastSync || isBefore(lastSync, subHours(new Date(), 24));
 
         if (needsSync && user && !isSyncing) {
             const syncData = async () => {
