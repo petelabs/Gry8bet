@@ -30,7 +30,7 @@ const POPULAR_LEAGUES = [
 ];
 
 
-async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, string>): Promise<T | null> {
+async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, string>): Promise<T | null> {
     if (!API_KEY || API_KEY === '123') {
         // This function is now designed to fail gracefully if the key is missing.
         // The calling component is responsible for notifying the user.
@@ -38,8 +38,13 @@ async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, str
         return null;
     }
 
-    const queryString = new URLSearchParams(params).toString();
-    const url = `${API_URL}/${endpoint}?${queryString}`;
+    let url = `${API_URL}/${endpoint}`;
+    if (params) {
+        const queryString = new URLSearchParams(params).toString();
+        if (queryString) {
+            url += `?${queryString}`;
+        }
+    }
     
     try {
         const response = await fetch(url);
@@ -65,7 +70,7 @@ export async function getUpcomingEvents() {
 
     // 1. Fetch all teams for all popular leagues to build a comprehensive logo map
     const teamPromises = POPULAR_LEAGUES.map(league => 
-        fetchFromSportsDB<TheSportsDBTeamsResponse>('search_all_teams.php', { l: league.name })
+        fetchFromSportsDB<TheSportsDBTeamsResponse>('lookup_all_teams.php', { id: league.id })
     );
     const teamResponses = await Promise.all(teamPromises);
 
@@ -140,6 +145,7 @@ export async function getLast5EventsForTeam(teamId: string): Promise<TheSportsDB
 }
 
 export async function getH2HEvents(teamAName: string, teamBName: string): Promise<TheSportsDBEvent[]> {
-    const response = await fetchFromSportsDB<TheSportsDBEventsResponse>('searchevents.php', { e: `${teamAName}_vs_${teamBName}` });
+    const query = `${teamAName.replace(/ /g, '_')}_vs_${teamBName.replace(/ /g, '_')}`;
+    const response = await fetchFromSportsDB<TheSportsDBEventsResponse>(`search/event/${query}`);
     return response?.event || [];
 }
