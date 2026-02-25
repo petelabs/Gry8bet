@@ -9,17 +9,30 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    /**
-     * PUBLIC DATA
-     * All collections that are publicly readable but have restricted writes.
-     * This includes match data, AI predictions, and system status needed for caching.
-     */
-    match /{collection}/{docId} where collection in ['matches', 'predictions', 'system', 'leagues', 'teams'] {
-      // Allow anyone to read data for a fast, public-facing app.
+    // Explicitly allow public reads and restricted writes for each collection.
+
+    match /matches/{matchId} {
       allow get, list: if true;
-      
-      // Only allow authenticated users to write data (i.e., trigger a cache update).
-      // This prevents abuse of the external sports API.
+      allow write: if isSignedIn();
+    }
+
+    match /predictions/{matchId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /system/{docId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /leagues/{leagueId} {
+      allow get, list: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /teams/{teamId} {
+      allow get, list: if true;
       allow write: if isSignedIn();
     }
   }
