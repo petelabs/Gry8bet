@@ -27,6 +27,16 @@ export default function Home() {
         const loadMatches = async () => {
             setIsLoading(true);
             setError(null);
+
+            // Explicitly check for the API key on the client side for better user feedback.
+            const apiKey = process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY;
+            if (!apiKey || apiKey === '123') {
+                setError('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+                setIsLoading(false);
+                setMatches([]);
+                return;
+            }
+
             try {
                 console.log("Fetching matches directly from API...");
                 const apiMatches = await getUpcomingEvents();
@@ -34,14 +44,14 @@ export default function Home() {
                 if (apiMatches && apiMatches.length > 0) {
                     setMatches(apiMatches);
                 } else {
-                    // API returned no matches
+                    // API returned no matches, which could be an API issue or just no scheduled games.
                     setMatches([]);
                 }
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to load match data.';
                 console.error('Match Loading Error:', err);
                 setError(message);
-                setMatches([]); // Set to empty array on error to show "No matches"
+                setMatches([]); // Set to empty array on error
             } finally {
                 setIsLoading(false);
             }

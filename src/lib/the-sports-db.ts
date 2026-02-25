@@ -31,8 +31,10 @@ const POPULAR_LEAGUES = [
 
 async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, string>): Promise<T | null> {
     if (!API_KEY || API_KEY === '123') {
-        const errorMessage = 'TheSportsDB API key is not configured. Please add NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables.';
-        throw new Error(errorMessage);
+        // This function is now designed to fail gracefully if the key is missing.
+        // The calling component is responsible for notifying the user.
+        console.error('TheSportsDB API key is not configured. Please add NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables.');
+        return null;
     }
 
     const queryString = new URLSearchParams(params).toString();
@@ -52,7 +54,7 @@ async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, str
         return data as T;
     } catch (error) {
         console.error(`Error fetching from TheSportsDB endpoint ${endpoint}:`, error);
-        throw error;
+        return null; // Return null instead of throwing
     }
 }
 
