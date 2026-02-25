@@ -61,7 +61,7 @@ service cloud.firestore {
      */
     match /{collection}/{docId}
       where collection in ['leagues', 'teams', 'matches', 'predictions'] {
-      allow read: if true;
+      allow get, list: if true;
       allow write: if isSignedIn();
     }
     
@@ -76,7 +76,7 @@ service cloud.firestore {
      *  /system/{docId}
      */
     match /system/{docId} {
-        allow read: if true;
+        allow get, list: if true;
         allow write: if isSignedIn();
     }
   }
