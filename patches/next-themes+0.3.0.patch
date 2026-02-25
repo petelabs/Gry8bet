@@ -1,10 +1,10 @@
 --- a/node_modules/next-themes/package.json
 +++ b/node_modules/next-themes/package.json
-@@ -45,7 +45,7 @@
-   "sideEffects": false,
+@@ -53,6 +53,6 @@
+     "build": "tsup"
+   },
    "peerDependencies": {
 -    "react": "^16.8 || ^17 || ^18"
 +    "react": "^16.8 || ^17 || ^18 || ^19"
-   },
-   "peerDependenciesMeta": {
-     "typescript": {
+   }
+ }
