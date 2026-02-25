@@ -1,5 +1,6 @@
 import type { TheSportsDBEventsResponse, TheSportsDBTeamsResponse, TheSportsDBEvent } from './types';
 import { mapSportsDBEventToMatch, mapSportsDBEventWithTeamDetailsToMatch } from './the-sports-db-mappers';
+import { isAfter, parse } from 'date-fns';
 
 const API_KEY = process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY;
 const API_URL = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
@@ -76,9 +77,12 @@ export async function getUpcomingEvents() {
         }
     }
 
-    // 2. Fetch the next events for each league
+    // 2. Fetch events for the current season for each league
+    const currentYear = new Date().getFullYear();
+    const season = `${currentYear}-${currentYear + 1}`; // Handles European seasons like 2024-2025
+
     const eventPromises = POPULAR_LEAGUES.map(league => 
-        fetchFromSportsDB<TheSportsDBEventsResponse>('eventsnextleague.php', { id: league.id })
+        fetchFromSportsDB<TheSportsDBEventsResponse>('eventsseason.php', { id: league.id, s: season })
     );
     const eventResponses = await Promise.all(eventPromises);
 
@@ -88,11 +92,26 @@ export async function getUpcomingEvents() {
         }
     }
 
-    // 3. Map events to the internal Match type
-    const matches = allEvents.map(event => mapSportsDBEventToMatch(event, teamLogosMap));
+    // 3. Filter for upcoming events, map to the internal Match type, and sort
+    const now = new Date();
+    const matches = allEvents
+        .filter(event => {
+            if (!event.dateEvent || !event.strTime) return false;
+            // TheSportsDB times can be 'HH:mm:ss' or 'HH:mm'
+            const timeFormat = event.strTime.length > 5 ? 'HH:mm:ss' : 'HH:mm';
+            try {
+                const parsedDate = parse(`${event.dateEvent} ${event.strTime}`, `yyyy-MM-dd ${timeFormat}`, new Date());
+                return isAfter(parsedDate, now);
+            } catch (e) {
+                console.warn(`Could not parse date for event ${event.idEvent}: ${event.dateEvent} ${event.strTime}`);
+                return false;
+            }
+        })
+        .map(event => mapSportsDBEventToMatch(event, teamLogosMap));
     
-    // Remove duplicates just in case (e.g. a team is in multiple concurrent competitions)
-    const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
+    // Remove duplicates and sort by date
+    const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values())
+        .sort((a, b) => new Date(a.kickOff).getTime() - new Date(b.kickOff).getTime());
 
     return uniqueMatches;
 }
