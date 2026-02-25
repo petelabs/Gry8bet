@@ -39,7 +39,11 @@ export default function MatchPage() {
         setError(null);
         try {
             const fetchedMatch = await getEventDetailsById(id);
-            setMatch(fetchedMatch);
+            if (fetchedMatch) {
+              setMatch(fetchedMatch);
+            } else if (!process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY || process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY === '123') {
+              setError('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+            }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'An unknown error occurred.';
             setError(message);
@@ -83,13 +87,14 @@ export default function MatchPage() {
   }, [match]);
 
   if (error) {
+    const isApiConfigError = error.includes('TheSportsDB API key is not configured');
     return (
       <div className="container py-6 sm:py-8 max-w-2xl mx-auto">
-        <Alert variant="destructive">
+        <Alert variant={isApiConfigError ? 'default' : 'destructive'}>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>API Error</AlertTitle>
+          <AlertTitle>{isApiConfigError ? 'Configuration Required' : 'API Error'}</AlertTitle>
           <AlertDescription>
-            Could not load match data: {error}
+            {error}
           </AlertDescription>
         </Alert>
       </div>

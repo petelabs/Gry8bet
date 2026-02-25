@@ -19,12 +19,12 @@ function formatTeamForm(events: TheSportsDBEvent[], teamName: string): string {
         const isHome = match.strHomeTeam === teamName;
         const score = `${match.intHomeScore}-${match.intAwayScore}`;
         if (isHome) {
-            if (match.intHomeScore > match.intAwayScore) return 'W';
-            if (match.intHomeScore < match.intAwayScore) return 'L';
+            if (parseInt(match.intHomeScore!) > parseInt(match.intAwayScore!)) return 'W';
+            if (parseInt(match.intHomeScore!) < parseInt(match.intAwayScore!)) return 'L';
             return 'D';
         } else {
-            if (match.intAwayScore > match.intHomeScore) return 'W';
-            if (match.intAwayScore < match.intHomeScore) return 'L';
+            if (parseInt(match.intAwayScore!) > parseInt(match.intHomeScore!)) return 'W';
+            if (parseInt(match.intAwayScore!) < parseInt(match.intHomeScore!)) return 'L';
             return 'D';
         }
     }).join('');
@@ -45,9 +45,9 @@ function getHeadToHeadStats(h2h: TheSportsDBEvent[], homeTeamName: string, awayT
     recentH2h.forEach(match => {
         if (match.intHomeScore === match.intAwayScore) {
             draws++;
-        } else if (match.strHomeTeam === homeTeamName && match.intHomeScore > match.intAwayScore) {
+        } else if (match.strHomeTeam === homeTeamName && parseInt(match.intHomeScore!) > parseInt(match.intAwayScore!)) {
             homeWins++;
-        } else if (match.strAwayTeam === homeTeamName && match.intAwayScore > match.intHomeScore) {
+        } else if (match.strAwayTeam === homeTeamName && parseInt(match.intAwayScore!) > parseInt(match.intHomeScore!)) {
             homeWins++;
         } else {
             awayWins++;

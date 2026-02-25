@@ -31,10 +31,6 @@ const POPULAR_LEAGUES = [
 
 
 async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, string>): Promise<T | null> {
-    if (!API_KEY || API_KEY === '123') {
-        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
-    }
-
     let url = `${API_URL}/${endpoint}`;
     if (params) {
         const queryString = new URLSearchParams(params).toString();
@@ -63,6 +59,10 @@ async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, st
 }
 
 export async function getUpcomingEvents() {
+    if (!API_KEY || API_KEY === '123') {
+        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+    }
+    
     const teamLogosMap = new Map<string, { id: string, logoUrl: string }>();
     let allEvents: TheSportsDBEvent[] = [];
 
@@ -120,6 +120,9 @@ export async function getUpcomingEvents() {
 }
 
 export async function getEventDetailsById(eventId: string) {
+    if (!API_KEY || API_KEY === '123') {
+        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+    }
     const eventResponse = await fetchFromSportsDB<TheSportsDBEventsResponse>('lookupevent.php', { id: eventId });
     const event = eventResponse?.events?.[0];
 
@@ -138,11 +141,17 @@ export async function getEventDetailsById(eventId: string) {
 }
 
 export async function getLast5EventsForTeam(teamId: string): Promise<TheSportsDBEvent[]> {
+    if (!API_KEY || API_KEY === '123') {
+        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+    }
     const response = await fetchFromSportsDB<TheSportsDBEventsResponse>('eventslast.php', { id: teamId });
     return response?.results || [];
 }
 
 export async function getH2HEvents(teamAName: string, teamBName: string): Promise<TheSportsDBEvent[]> {
+    if (!API_KEY || API_KEY === '123') {
+        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
+    }
     const query = `${teamAName.replace(/ /g, '_')}_vs_${teamBName.replace(/ /g, '_')}`;
     const response = await fetchFromSportsDB<TheSportsDBEventsResponse>(`search/event/${query}`);
     return response?.event || [];
