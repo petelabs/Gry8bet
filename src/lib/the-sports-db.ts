@@ -3,8 +3,17 @@ import { mapSportsDBEventToMatch, mapSportsDBEventWithTeamDetailsToMatch } from 
 
 const API_KEY = process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY;
 const API_URL = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
-const PREMIER_LEAGUE_ID = '4328';
-const PREMIER_LEAGUE_NAME = 'English Premier League';
+
+// Define a list of popular leagues to fetch data for
+const POPULAR_LEAGUES = [
+    { id: '4328', name: 'English Premier League' },
+    { id: '4335', name: 'Spanish La Liga' },
+    { id: '4332', name: 'Italian Serie A' },
+    { id: '4331', name: 'German Bundesliga' },
+    { id: '4334', name: 'French Ligue 1' },
+    { id: '4480', name: 'UEFA Champions League' },
+];
+
 
 async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, string>): Promise<T | null> {
     if (!API_KEY) {
@@ -34,27 +43,45 @@ async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, str
     }
 }
 
-export async function getUpcomingPremierLeagueEvents() {
-    // 1. Fetch all teams to get their logos
-    const teamsResponse = await fetchFromSportsDB<TheSportsDBTeamsResponse>('search_all_teams.php', { l: PREMIER_LEAGUE_NAME });
+export async function getUpcomingEvents() {
     const teamLogosMap = new Map<string, { id: string, logoUrl: string }>();
-    if (teamsResponse && teamsResponse.teams) {
-        for (const team of teamsResponse.teams) {
-            teamLogosMap.set(team.strTeam, { id: team.idTeam, logoUrl: team.strTeamBadge });
+    let allEvents: TheSportsDBEvent[] = [];
+
+    // 1. Fetch all teams for all popular leagues to build a comprehensive logo map
+    const teamPromises = POPULAR_LEAGUES.map(league => 
+        fetchFromSportsDB<TheSportsDBTeamsResponse>('search_all_teams.php', { l: league.name })
+    );
+    const teamResponses = await Promise.all(teamPromises);
+
+    for (const teamsResponse of teamResponses) {
+        if (teamsResponse && teamsResponse.teams) {
+            for (const team of teamsResponse.teams) {
+                if (!teamLogosMap.has(team.strTeam)) {
+                    teamLogosMap.set(team.strTeam, { id: team.idTeam, logoUrl: team.strTeamBadge });
+                }
+            }
         }
     }
 
-    // 2. Fetch the next 15 events
-    const eventsResponse = await fetchFromSportsDB<TheSportsDBEventsResponse>('eventsnextleague.php', { id: PREMIER_LEAGUE_ID });
-    
-    if (!eventsResponse || !eventsResponse.events) {
-        return [];
+    // 2. Fetch the next events for each league
+    const eventPromises = POPULAR_LEAGUES.map(league => 
+        fetchFromSportsDB<TheSportsDBEventsResponse>('eventsnextleague.php', { id: league.id })
+    );
+    const eventResponses = await Promise.all(eventPromises);
+
+    for (const eventsResponse of eventResponses) {
+        if (eventsResponse && eventsResponse.events) {
+            allEvents.push(...eventsResponse.events);
+        }
     }
 
     // 3. Map events to the internal Match type
-    const matches = eventsResponse.events.map(event => mapSportsDBEventToMatch(event, teamLogosMap));
+    const matches = allEvents.map(event => mapSportsDBEventToMatch(event, teamLogosMap));
+    
+    // Remove duplicates just in case (e.g. a team is in multiple concurrent competitions)
+    const uniqueMatches = Array.from(new Map(matches.map(m => [m.id, m])).values());
 
-    return matches;
+    return uniqueMatches;
 }
 
 export async function getEventDetailsById(eventId: string) {

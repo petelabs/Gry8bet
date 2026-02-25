@@ -1,7 +1,7 @@
 'use client';
     
 import { useEffect, useState } from 'react';
-import { getUpcomingPremierLeagueEvents } from '@/lib/the-sports-db';
+import { getUpcomingEvents } from '@/lib/the-sports-db';
 import type { Match } from '@/lib/types';
 import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -45,7 +45,7 @@ export default function Home() {
             setIsLoading(true);
             setError(null);
             try {
-                const fetchedMatches = await getUpcomingPremierLeagueEvents();
+                const fetchedMatches = await getUpcomingEvents();
                 
                 if (fetchedMatches.length > 0) {
                      const sortedMatches = fetchedMatches
@@ -99,7 +99,7 @@ export default function Home() {
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No upcoming matches found.</h3>
-                    <p className="mt-1 text-sm">There are no new Premier League matches scheduled.</p>
+                    <p className="mt-1 text-sm">There are no new matches scheduled in the top leagues.</p>
                 </div>
                  <div className="mt-8">
                     <ShareCard />

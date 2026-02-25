@@ -28,6 +28,24 @@ export const bettingSites: BettingSite[] = [
     continents: ['Africa', 'Asia', 'Europe'],
     description: 'Known for its wide range of betting markets and high odds, 1xBet is very popular across Africa and Asia.'
   },
+   {
+    id: '7',
+    name: 'Premier Bet',
+    url: 'https://premierbet.com',
+    logoUrl: 'https://picsum.photos/seed/pb/200/200',
+    logoImageHint: 'premier bet logo',
+    continents: ['Africa'],
+    description: 'A leading betting operator in Africa, offering a tailored experience for sports fans across many countries.'
+  },
+  {
+    id: '8',
+    name: 'BetPawa',
+    url: 'https://betpawa.com',
+    logoUrl: 'https://picsum.photos/seed/bp/200/200',
+    logoImageHint: 'betpawa logo',
+    continents: ['Africa'],
+    description: 'A mobile-focused betting company known for its user-friendly platform and low stakes, popular across Africa.'
+  },
   {
     id: '3',
     name: 'DraftKings',
