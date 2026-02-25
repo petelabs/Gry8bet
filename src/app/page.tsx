@@ -10,36 +10,87 @@ import { ShareCard } from '@/components/sharing/share-card';
 import { BetNowCard } from '@/components/betting/bet-now-card';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection, writeBatch, serverTimestamp, getDocs } from 'firebase/firestore';
-import { isBefore, subHours } from 'date-fns';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, writeBatch, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { useProPlan } from '@/hooks/use-pro-plan';
 
 export default function Home() {
     const { toast } = useToast();
     const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
 
-    // --- Caching & State Management ---
-    const { user } = useUser();
+    // --- State Management ---
     const firestore = useFirestore();
     const { isPro } = useProPlan();
+    const [matches, setMatches] = useState<Match[] | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [componentError, setComponentError] = useState<string | null>(null);
-    const [fallbackMatches, setFallbackMatches] = useState<Match[] | null>(null);
-    const [isFallbackLoading, setIsFallbackLoading] = useState(false);
-
-    // Memoize Firestore references
-    const syncStateRef = useMemoFirebase(() => firestore ? doc(firestore, 'system', 'syncState') : null, [firestore]);
+    // --- Firestore References ---
     const matchesCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'matches') : null, [firestore]);
     const predictionsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'predictions') : null, [firestore]);
+    const syncStateRef = useMemoFirebase(() => firestore ? doc(firestore, 'system', 'syncState') : null, [firestore]);
     
-    // Subscribe to sync state and matches collection
-    const { data: syncState, isLoading: isSyncLoading } = useDoc(syncStateRef);
-    const { data: cachedMatches, isLoading: areMatchesLoading, error: matchesError } = useCollection<Match>(matchesCollectionRef);
+    // Subscribe to predictions for high-confidence picks
     const { data: cachedPredictions } = useCollection<Prediction>(predictionsCollectionRef);
+    
+    // Effect to load matches from cache or API
+    useEffect(() => {
+        if (!firestore || !matchesCollectionRef || !syncStateRef) {
+            return;
+        }
 
-    // Effect to handle one-time affiliate ad
+        const loadMatches = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                // 1. Try to get matches from Firestore cache first, ordered by kickoff time
+                const q = query(matchesCollectionRef, orderBy("kickOff", "asc"));
+                const matchesSnapshot = await getDocs(q);
+
+                if (!matchesSnapshot.empty) {
+                    console.log("Loading matches from Firestore cache.");
+                    const cachedMatches = matchesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Match));
+                    setMatches(cachedMatches);
+                } else {
+                    // 2. If cache is empty, fetch from API
+                    console.log("Cache is empty. Fetching matches from API.");
+                    const apiMatches = await getUpcomingEvents();
+
+                    if (apiMatches && apiMatches.length > 0) {
+                        setMatches(apiMatches);
+                        // 3. Fire-and-forget: update the cache for next time
+                        console.log("Syncing new matches to Firestore in the background...");
+                        const batch = writeBatch(firestore);
+                        apiMatches.forEach(match => {
+                            const matchDocRef = doc(firestore, 'matches', match.id);
+                            // Ensure the object is a plain JS object for Firestore
+                            const serializableMatch = JSON.parse(JSON.stringify(match));
+                            batch.set(matchDocRef, serializableMatch);
+                        });
+                        batch.set(syncStateRef, { lastSync: serverTimestamp() });
+                        await batch.commit();
+                        console.log("Background sync complete.");
+                    } else {
+                        // API returned no matches
+                        setMatches([]);
+                    }
+                }
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to load match data.';
+                console.error('Match Loading Error:', err);
+                setError(message);
+                setMatches([]); // Set to empty array on error to show "No matches"
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadMatches();
+        // This effect should run once on component mount
+    }, [firestore, matchesCollectionRef, syncStateRef]);
+
+
+    // Effect for one-time affiliate ad
     useEffect(() => {
         if (isPro) return; // Don't show ads for Pro users
         const adShown = localStorage.getItem('affiliate_ad_shown');
@@ -61,83 +112,6 @@ export default function Home() {
         }
     }, [toast, isPro]);
 
-    // Effect to sync data to Firestore if cache is stale (for authenticated users only)
-    useEffect(() => {
-        if (!firestore || isSyncLoading || !user || isSyncing) {
-            return; // Wait for dependencies & only run for authenticated users
-        }
-
-        const lastSync = syncState?.lastSync?.toDate();
-        const needsSync = !lastSync || isBefore(lastSync, subHours(new Date(), 24));
-
-        if (needsSync) {
-            const syncData = async () => {
-                setIsSyncing(true);
-                setComponentError(null);
-                console.log('Authenticated user triggering data sync...');
-                try {
-                    const newMatches = await getUpcomingEvents();
-
-                    if (newMatches && newMatches.length > 0) {
-                        const batch = writeBatch(firestore);
-                        const oldMatchesSnapshot = await getDocs(matchesCollectionRef!);
-                        oldMatchesSnapshot.forEach(doc => batch.delete(doc.ref));
-
-                        newMatches.forEach(match => {
-                            const matchDocRef = doc(firestore, 'matches', match.id);
-                            const serializableMatch = JSON.parse(JSON.stringify(match));
-                            batch.set(matchDocRef, serializableMatch);
-                        });
-
-                        batch.set(syncStateRef!, { lastSync: serverTimestamp() });
-                        await batch.commit();
-                        console.log('Sync complete. Wrote new matches to Firestore.');
-                    } else {
-                        // Still update timestamp even if no matches are found, to prevent constant re-fetching
-                        const batch = writeBatch(firestore);
-                        batch.set(syncStateRef!, { lastSync: serverTimestamp() });
-                        await batch.commit();
-                        console.log('Sync attempted, but API returned no matches. Timestamp updated.');
-                    }
-                } catch (err) {
-                    const message = err instanceof Error ? err.message : 'Failed to sync match data.';
-                    console.error('Sync Error:', err);
-                    setComponentError(message);
-                } finally {
-                    setIsSyncing(false);
-                }
-            };
-            syncData();
-        }
-    }, [syncState, isSyncLoading, user, isSyncing, firestore, matchesCollectionRef, syncStateRef]);
-
-    // Effect to fetch directly from API if Firestore cache is empty on load
-    useEffect(() => {
-        if (!areMatchesLoading && (!cachedMatches || cachedMatches.length === 0) && !isSyncing) {
-            const fetchFallbackData = async () => {
-                console.log("Cache is empty. Fetching directly from API as a fallback.");
-                setIsFallbackLoading(true);
-                try {
-                    const newMatches = await getUpcomingEvents();
-                    setFallbackMatches(newMatches);
-                } catch (err) {
-                    const message = err instanceof Error ? err.message : 'Failed to fetch fallback match data.';
-                    console.error('Fallback Fetch Error:', err);
-                    setComponentError(message);
-                } finally {
-                    setIsFallbackLoading(false);
-                }
-            };
-
-            fetchFallbackData();
-        }
-    }, [areMatchesLoading, cachedMatches, isSyncing]);
-    
-    const error = componentError || matchesError?.message;
-    // Use cached matches if available, otherwise use the fallback matches.
-    const matches = (cachedMatches && cachedMatches.length > 0) ? cachedMatches : (fallbackMatches ?? []);
-    // The app is loading if any of the data sources are still fetching, AND we don't have any matches to show yet.
-    const isLoading = (areMatchesLoading || isSyncing || isFallbackLoading) && matches.length === 0;
 
     const highConfidencePicks = useMemo(() => {
         if (!cachedPredictions) return new Set<string>();
@@ -162,7 +136,7 @@ export default function Home() {
           );
     }
 
-    if (isLoading) {
+    if (isLoading || matches === null) {
         return (
             <div className="container py-6 sm:py-8">
                 <div className="flex justify-center items-center py-24 text-muted-foreground bg-card rounded-lg border gap-4">
