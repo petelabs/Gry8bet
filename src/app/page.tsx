@@ -1,8 +1,7 @@
 'use client';
     
 import { useEffect, useState } from 'react';
-import { getFixtures } from '@/lib/api-sports';
-import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
+import { getUpcomingPremierLeagueEvents } from '@/lib/the-sports-db';
 import type { Match } from '@/lib/types';
 import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -46,21 +45,12 @@ export default function Home() {
             setIsLoading(true);
             setError(null);
             try {
-                const fixtureData = await getFixtures();
+                const fetchedMatches = await getUpcomingPremierLeagueEvents();
                 
-                const hasErrors = fixtureData && (Array.isArray(fixtureData.errors) ? fixtureData.errors.length > 0 : Object.keys(fixtureData.errors).length > 0);
-
-                if (!fixtureData || hasErrors) {
-                    const errorKey = hasErrors ? Object.keys(fixtureData.errors)[0] : '';
-                    const errorMessage = hasErrors ? fixtureData.errors[errorKey as any] : 'Could not fetch match data.';
-                    throw new Error(typeof errorMessage === 'string' ? errorMessage : 'An unexpected API error occurred.');
-                }
-
-                if (fixtureData.results > 0) {
-                    const fetchedMatches: Match[] = fixtureData.response
-                        .map(mapApiFixtureToMatch)
+                if (fetchedMatches.length > 0) {
+                     const sortedMatches = fetchedMatches
                         .sort((a, b) => new Date(a.kickOff).getTime() - new Date(b.kickOff).getTime());
-                    setMatches(fetchedMatches);
+                    setMatches(sortedMatches);
                 } else {
                     setMatches([]);
                 }
@@ -109,7 +99,7 @@ export default function Home() {
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No upcoming matches found.</h3>
-                    <p className="mt-1 text-sm">There are no new matches scheduled for today.</p>
+                    <p className="mt-1 text-sm">There are no new Premier League matches scheduled.</p>
                 </div>
                  <div className="mt-8">
                     <ShareCard />

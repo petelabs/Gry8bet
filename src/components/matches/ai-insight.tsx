@@ -36,6 +36,8 @@ export function AIInsight({ match }: AIInsightProps) {
     try {
         const apiResult = await getMatchPredictionSummary({
             matchId: match.id,
+            homeTeamId: match.homeTeam.id,
+            awayTeamId: match.awayTeam.id,
             homeTeamName: match.homeTeam.name,
             awayTeamName: match.awayTeam.name,
             league: match.league,

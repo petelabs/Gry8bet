@@ -12,8 +12,7 @@ import type { Match } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { addMinutes } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { getFixtureById } from '@/lib/api-sports';
-import { mapApiFixtureToMatch } from '@/lib/api-sports-mappers';
+import { getEventDetailsById } from '@/lib/the-sports-db';
 import { ShareCard } from '@/components/sharing/share-card';
 
 
@@ -37,14 +36,8 @@ export default function MatchPage() {
         setIsLoading(true);
         setError(null);
         try {
-            const fixtureData = await getFixtureById(id);
-
-            if (!fixtureData || fixtureData.results === 0) {
-                setMatch(null);
-            } else {
-                const fetchedMatch = mapApiFixtureToMatch(fixtureData.response[0]);
-                setMatch(fetchedMatch);
-            }
+            const fetchedMatch = await getEventDetailsById(id);
+            setMatch(fetchedMatch);
         } catch (err) {
             const message = err instanceof Error ? err.message : 'An unknown error occurred.';
             setError(message);

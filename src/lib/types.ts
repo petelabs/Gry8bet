@@ -1,4 +1,5 @@
 export type Team = {
+  id: string;
   name: string;
   logoUrl: string;
   logoImageHint: string;
@@ -26,91 +27,37 @@ export type BettingSite = {
   description: string;
 };
 
-// Types for API-Sports Prediction Response
-export type ApiSportsPrediction = {
-  winner: {
-    id: number | null;
-    name: string | null;
-    comment: string | null;
-  };
-  advice: string;
-  percent: {
-    home: string;
-    draw: string;
-    away: string;
-  };
-};
 
-export type ApiSportsH2H = {
-  fixture: {
-    id: number;
-    // other fixture details
-  };
-  teams: {
-    home: { id: number; name: string; winner: boolean | null; };
-    away: { id: number; name: string; winner: boolean | null; };
-  };
-};
+// Types for TheSportsDB API
+export interface TheSportsDBEvent {
+    idEvent: string;
+    strEvent: string;
+    strLeague: string;
+    strHomeTeam: string;
+    strAwayTeam: string;
+    idHomeTeam: string;
+    idAwayTeam: string;
+    intHomeScore: string | null;
+    intAwayScore: string | null;
+    dateEvent: string;
+    strTime: string;
+    strVenue: string;
+    strThumb: string | null;
+}
 
-export type ApiSportsResponseData = {
-  predictions: ApiSportsPrediction;
-  teams: {
-    home: { id: number; name: string; last_5: { form: string } };
-    away: { id: number; name: string; last_5: { form: string } };
-  };
-  comparison: {
-    // comparison data
-    [key: string]: any;
-  };
-  h2h: ApiSportsH2H[];
-};
+export interface TheSportsDBTeam {
+    idTeam: string;
+    strTeam: string;
+    strTeamBadge: string;
+    // other team properties
+}
 
-export type ApiSportsPredictionResponse = {
-  get: string;
-  parameters: { fixture: string };
-  errors: any[] | { [key: string]: string };
-  results: number;
-  response: ApiSportsResponseData[];
-};
+export interface TheSportsDBEventsResponse {
+    events: TheSportsDBEvent[];
+    results: TheSportsDBEvent[]; // for last 5 events
+    event: TheSportsDBEvent[]; // for H2H
+}
 
-// Types for API-Sports Fixture Response
-export type ApiSportsFixture = {
-    fixture: {
-        id: number;
-        date: string;
-        venue: {
-            name: string | null;
-            city: string | null;
-        };
-    };
-    league: {
-        id: number;
-        name: string;
-        country: string;
-        logo: string;
-        flag: string | null;
-        season: number;
-    };
-    teams: {
-        home: {
-            id: number;
-            name: string;
-            logo: string;
-            winner: boolean | null;
-        };
-        away: {
-            id: number;
-            name: string;
-            logo: string;
-            winner: boolean | null;
-        };
-    };
-};
-
-export type ApiSportsFixtureResponse = {
-    get: string;
-    parameters: { [key: string]: string };
-    errors: any[] | { [key: string]: string };
-    results: number;
-    response: ApiSportsFixture[];
-};
+export interface TheSportsDBTeamsResponse {
+    teams: TheSportsDBTeam[];
+}
