@@ -11,20 +11,25 @@ const POPULAR_LEAGUES = [
     { id: '4332', name: 'Italian Serie A' },
     { id: '4331', name: 'German Bundesliga' },
     { id: '4334', name: 'French Ligue 1' },
+    { id: '4396', name: 'USA Major League Soccer' },
+    { id: '4346', name: 'Brazilian Serie A' },
     { id: '4480', name: 'UEFA Champions League' },
+    { id: '4481', name: 'UEFA Europa League' },
+    { id: '4767', name: 'Copa Libertadores' },
+    { id: '4421', name: 'Japanese J League' },
 ];
 
 
 async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, string>): Promise<T | null> {
-    if (!API_KEY) {
-        console.error('TheSportsDB API key is not configured.');
-        throw new Error('API key is not configured.');
+    if (!API_KEY || API_KEY === '123') {
+        const errorMessage = 'TheSportsDB API key is not configured or is using the default placeholder.';
+        console.error(errorMessage);
+        throw new Error(errorMessage);
     }
 
     const queryString = new URLSearchParams(params).toString();
     const url = `${API_URL}/${endpoint}?${queryString}`;
-    console.log(`Fetching from TheSportsDB: ${url}`);
-
+    
     try {
         const response = await fetch(url);
         if (!response.ok) {

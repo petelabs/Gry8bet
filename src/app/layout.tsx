@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AgeVerificationModal } from '@/components/legal/age-verification-modal';
+import { ProPlanProvider } from '@/hooks/use-pro-plan';
 
 export const metadata: Metadata = {
   title: {
@@ -35,13 +36,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen flex flex-col")}>
-        <FirebaseClientProvider>
-            <Header />
-            <main className="flex-1 flex flex-col">{children}</main>
-            <Toaster />
-            <InstallPrompt />
-            <AgeVerificationModal />
-        </FirebaseClientProvider>
+        <ProPlanProvider>
+            <FirebaseClientProvider>
+                <Header />
+                <main className="flex-1 flex flex-col">{children}</main>
+                <Toaster />
+                <InstallPrompt />
+                <AgeVerificationModal />
+            </FirebaseClientProvider>
+        </ProPlanProvider>
       </body>
     </html>
   );

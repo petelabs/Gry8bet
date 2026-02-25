@@ -72,7 +72,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Match entity, from API-Sports."
+          "description": "Unique identifier for the Match entity, from TheSportsDB."
         },
         "homeTeam": {
           "type": "object",
@@ -172,55 +172,23 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/matches/{matchId}",
-        "definition": {
-          "entityName": "Match",
-          "schema": {
-            "$ref": "#/backend/entities/Match"
-          },
-          "description": "Cache of football matches for the day, fetched from API-Sports. Documents are overwritten daily. This collection is publicly readable.",
-          "params": [
-            {
-              "name": "matchId",
-              "description": "The unique fixture ID from API-Sports."
-            }
-          ]
-        }
+    "/matches/{matchId}": {
+      "schema": {
+        "$ref": "#/entities/Match"
       },
-      {
-        "path": "/predictions/{matchId}",
-        "definition": {
-          "entityName": "Prediction",
-          "schema": {
-            "$ref": "#/backend/entities/Prediction"
-          },
-          "description": "Cache of AI-generated predictions. A document is created on-demand when a user requests an analysis for a specific match. Publicly readable.",
-          "params": [
-            {
-              "name": "matchId",
-              "description": "The unique fixture ID of the match this prediction is for."
-            }
-          ]
-        }
+      "description": "Cache of football matches, fetched from TheSportsDB. Documents are overwritten periodically. This collection is publicly readable."
+    },
+    "/predictions/{matchId}": {
+      "schema": {
+        "$ref": "#/entities/Prediction"
       },
-      {
-        "path": "/system/{docId}",
-        "definition": {
-          "entityName": "System",
-          "schema": {
-            "$ref": "#/backend/entities/System"
-          },
-          "description": "Stores internal system state, such as the timestamp of the last API data sync. Used by the client-side cron job to determine if a new data fetch is needed. Publicly readable, writable only by authenticated users.",
-          "params": [
-            {
-              "name": "docId",
-              "description": "The ID of the system document (e.g., 'syncState')."
-            }
-          ]
-        }
-      }
-    ]
+      "description": "Cache of AI-generated predictions. A document is created on-demand when a user requests an analysis for a specific match. Publicly readable."
+    },
+    "/system/{docId}": {
+      "schema": {
+        "$ref": "#/entities/System"
+      },
+      "description": "Stores internal system state, such as the timestamp of the last API data sync. Used by the client-side cron job to determine if a new data fetch is needed. Publicly readable, writable only by authenticated users."
+    }
   }
 }

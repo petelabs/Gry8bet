@@ -25,14 +25,14 @@ export function ProModal({ isOpen, onClose }: ProModalProps) {
                 <Zap className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <DialogTitle className="text-center text-2xl">Upgrade to Pro</DialogTitle>
+          <DialogTitle className="text-center text-2xl">Upgrade to VIP</DialogTitle>
           <DialogDescription className="text-center">
-            This feature is part of the Pro plan. Upgrade now to unlock AI insights and more.
+            You've used your one free search. Upgrade to VIP to unlock unlimited searches and other exclusive features!
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:gap-2">
           <Button asChild size="lg">
-            <Link href="/pricing">Upgrade</Link>
+            <Link href="/pricing">Upgrade Now</Link>
           </Button>
           <Button variant="ghost" onClick={onClose}>Maybe Later</Button>
         </DialogFooter>
