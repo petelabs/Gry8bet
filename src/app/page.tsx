@@ -18,12 +18,14 @@ export default function Home() {
     const { toast } = useToast();
     const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
 
-    // --- Caching Logic ---
+    // --- Caching & State Management ---
     const { user } = useUser();
     const firestore = useFirestore();
 
     const [isSyncing, setIsSyncing] = useState(false);
     const [componentError, setComponentError] = useState<string | null>(null);
+    const [fallbackMatches, setFallbackMatches] = useState<Match[] | null>(null);
+    const [isFallbackLoading, setIsFallbackLoading] = useState(false);
 
     // Memoize Firestore references
     const syncStateRef = useMemoFirebase(() => firestore ? doc(firestore, 'system', 'syncState') : null, [firestore]);
@@ -54,19 +56,20 @@ export default function Home() {
         }
     }, [toast]);
 
-    // Effect to sync data with API if cache is stale
+    // Effect to sync data to Firestore if cache is stale (for authenticated users only)
     useEffect(() => {
-        if (!firestore || isSyncLoading) {
-            return; // Wait for dependencies
+        if (!firestore || isSyncLoading || !user || isSyncing) {
+            return; // Wait for dependencies & only run for authenticated users
         }
 
         const lastSync = syncState?.lastSync?.toDate();
         const needsSync = !lastSync || isBefore(lastSync, subHours(new Date(), 24));
 
-        if (needsSync && user && !isSyncing) {
+        if (needsSync) {
             const syncData = async () => {
                 setIsSyncing(true);
                 setComponentError(null);
+                console.log('Authenticated user triggering data sync...');
                 try {
                     const newMatches = await getUpcomingEvents();
 
@@ -77,17 +80,19 @@ export default function Home() {
 
                         newMatches.forEach(match => {
                             const matchDocRef = doc(firestore, 'matches', match.id);
-                            // Convert Date objects to Timestamps or ISO strings if they exist
                             const serializableMatch = JSON.parse(JSON.stringify(match));
                             batch.set(matchDocRef, serializableMatch);
                         });
 
                         batch.set(syncStateRef!, { lastSync: serverTimestamp() });
                         await batch.commit();
+                        console.log('Sync complete. Wrote new matches to Firestore.');
                     } else {
+                        // Still update timestamp even if no matches are found, to prevent constant re-fetching
                         const batch = writeBatch(firestore);
                         batch.set(syncStateRef!, { lastSync: serverTimestamp() });
                         await batch.commit();
+                        console.log('Sync attempted, but API returned no matches. Timestamp updated.');
                     }
                 } catch (err) {
                     const message = err instanceof Error ? err.message : 'Failed to sync match data.';
@@ -100,10 +105,34 @@ export default function Home() {
             syncData();
         }
     }, [syncState, isSyncLoading, user, isSyncing, firestore, matchesCollectionRef, syncStateRef]);
+
+    // Effect to fetch directly from API if Firestore cache is empty on load
+    useEffect(() => {
+        if (!areMatchesLoading && (!cachedMatches || cachedMatches.length === 0) && !isSyncing) {
+            const fetchFallbackData = async () => {
+                console.log("Cache is empty. Fetching directly from API as a fallback.");
+                setIsFallbackLoading(true);
+                try {
+                    const newMatches = await getUpcomingEvents();
+                    setFallbackMatches(newMatches);
+                } catch (err) {
+                    const message = err instanceof Error ? err.message : 'Failed to fetch fallback match data.';
+                    console.error('Fallback Fetch Error:', err);
+                    setComponentError(message);
+                } finally {
+                    setIsFallbackLoading(false);
+                }
+            };
+
+            fetchFallbackData();
+        }
+    }, [areMatchesLoading, cachedMatches, isSyncing]);
     
     const error = componentError || matchesError?.message;
-    const isLoading = areMatchesLoading || isSyncing || isSyncLoading;
-    const matches = cachedMatches ?? [];
+    // Use cached matches if available, otherwise use the fallback matches.
+    const matches = (cachedMatches && cachedMatches.length > 0) ? cachedMatches : (fallbackMatches ?? []);
+    // The app is loading if any of the data sources are still fetching, AND we don't have any matches to show yet.
+    const isLoading = (areMatchesLoading || isSyncing || isFallbackLoading) && matches.length === 0;
 
     if (error) {
          return (
@@ -125,19 +154,19 @@ export default function Home() {
                 <div className="flex justify-center items-center py-24 text-muted-foreground bg-card rounded-lg border gap-4">
                     <LoaderCircle className="h-6 w-6 animate-spin" />
                     <h3 className="text-lg font-semibold text-foreground">
-                        {isSyncing ? 'Syncing latest matches...' : 'Loading upcoming matches...'}
+                        Loading upcoming matches...
                     </h3>
                 </div>
             </div>
         );
     }
     
-    if (!matches || matches.length === 0) {
+    if (matches.length === 0) {
         return (
             <div className="container py-6 sm:py-8">
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No upcoming matches found.</h3>
-                    <p className="mt-1 text-sm">There are no new matches scheduled in the top leagues, or a sync is in progress.</p>
+                    <p className="mt-1 text-sm">There are no new matches scheduled in the top leagues. Please check back later.</p>
                 </div>
                  <div className="mt-8">
                     <ShareCard />
