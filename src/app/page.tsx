@@ -27,16 +27,6 @@ export default function Home() {
         const loadMatches = async () => {
             setIsLoading(true);
             setError(null);
-
-            // Explicitly check for the API key on the client side for better user feedback.
-            const apiKey = process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY;
-            if (!apiKey || apiKey === '123') {
-                setError('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
-                setIsLoading(false);
-                setMatches([]);
-                return;
-            }
-
             try {
                 console.log("Fetching matches directly from API...");
                 const apiMatches = await getUpcomingEvents();
@@ -98,6 +88,19 @@ export default function Home() {
         }
 
         if (error) {
+             // Check if the error is the specific API key error.
+            if (error.includes('TheSportsDB API key is not configured')) {
+                return (
+                    <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Configuration Required to Load Matches</AlertTitle>
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+                    </Alert>
+                );
+            }
+            // For all other errors, use the destructive variant.
             return (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />

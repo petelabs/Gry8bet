@@ -32,10 +32,7 @@ const POPULAR_LEAGUES = [
 
 async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, string>): Promise<T | null> {
     if (!API_KEY || API_KEY === '123') {
-        // This function is now designed to fail gracefully if the key is missing.
-        // The calling component is responsible for notifying the user.
-        console.error('TheSportsDB API key is not configured. Please add NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables.');
-        return null;
+        throw new Error('TheSportsDB API key is not configured. Please add the NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables to see matches.');
     }
 
     let url = `${API_URL}/${endpoint}`;
@@ -49,8 +46,8 @@ async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, st
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            console.error(`TheSportsDB request failed with status: ${response.status}`);
-            return null;
+            // Throw an error with the status to be caught by the calling function
+            throw new Error(`TheSportsDB request failed with status: ${response.status}`);
         }
         const data = await response.json();
         // TheSportsDB returns { events: null } or { teams: null } for no results, so we check for that.
@@ -60,7 +57,8 @@ async function fetchFromSportsDB<T>(endpoint: string, params?: Record<string, st
         return data as T;
     } catch (error) {
         console.error(`Error fetching from TheSportsDB endpoint ${endpoint}:`, error);
-        return null; // Return null instead of throwing
+        // Re-throw the error to be handled by the UI component
+        throw error;
     }
 }
 
