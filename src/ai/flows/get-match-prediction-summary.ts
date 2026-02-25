@@ -107,9 +107,12 @@ export type GetMatchPredictionSummaryInput = z.infer<typeof GetMatchPredictionSu
 
 const GetMatchPredictionSummaryOutputSchema = z.object({
   summary: z.string().describe('A concise, expert-level summary of the match prediction insights, incorporating all available data and analysis.'),
-  mostConfidentPick: z.string().describe('The single most confident prediction based on the analysis (e.g., "Home Win", "Both Teams to Score", "Draw").'),
+  mostConfidentPick: z.string().describe('The single most confident prediction based on the analysis (e.g., "Home Win", "Away Win", "Draw").'),
   confidenceScore: z.number().int().min(0).max(100).describe('A confidence score for the pick, from 0 (very low) to 100 (very high), based on your analysis of the form and H2H data.'),
-}).describe('Output containing the generated prediction summary and confident pick.');
+  bothTeamsToScore: z.string().describe('Prediction for "Both Teams to Score" (e.g., "Yes" or "No"). Provide a brief reason.'),
+  overUnder2_5: z.string().describe('Prediction for "Over/Under 2.5 Goals" (e.g., "Over" or "Under"). Provide a brief reason.'),
+}).describe('Output containing the generated prediction summary and other popular market picks.');
+
 
 export type GetMatchPredictionSummaryOutput = z.infer<typeof GetMatchPredictionSummaryOutputSchema>;
 
@@ -118,7 +121,7 @@ const prompt = ai.definePrompt({
   input: { schema: GetMatchPredictionSummaryInputSchema },
   output: { schema: GetMatchPredictionSummaryOutputSchema },
   tools: [getExpertMatchAnalysis],
-  prompt: `You are a world-class football prediction analyst. Your task is to provide a reliable, expert-level prediction summary for an upcoming football match.
+  prompt: `You are a world-class football prediction analyst. Your task is to provide a reliable, expert-level prediction summary for an upcoming football match, including popular betting markets.
 
 First, you MUST use the getExpertMatchAnalysis tool with the provided team IDs to fetch detailed historical data for the match.
 
@@ -129,7 +132,12 @@ Match Details for context:
 - Away Team: {{{awayTeamName}}}
 - League: {{{league}}}
 
-Generate a concise summary (2-3 paragraphs) that explains the reasoning behind your prediction. For the 'mostConfidentPick', determine the most likely outcome (e.g., "Home Win", "Draw", "Away Win", "Both Teams to Score"). For the 'confidenceScore', generate a score from 0 to 100 based on how confident you are in your pick given the available data.`,
+Generate the following outputs:
+1.  \`summary\`: A concise summary (2-3 paragraphs) that explains the reasoning behind your main prediction.
+2.  \`mostConfidentPick\`: Determine the most likely match result (e.g., "Home Win", "Draw", "Away Win"). Do not use other markets like "Both Teams to Score" for this field.
+3.  \`confidenceScore\`: Generate a score from 0 to 100 based on how confident you are in your 'mostConfidentPick'.
+4.  \`bothTeamsToScore\`: Predict if both teams will score ("Yes" or "No") and add a very brief (1-sentence) justification. Example: "Yes - both teams have strong attacks and leaky defenses."
+5.  \`overUnder2_5\`: Predict if the total goals will be "Over" or "Under" 2.5, and add a very brief (1-sentence) justification. Example: "Over - recent matches for both teams have been high-scoring."`,
 });
 
 const getMatchPredictionSummaryFlow = ai.defineFlow(

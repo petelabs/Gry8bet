@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import type { Match } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Sparkles, LoaderCircle, ArrowUpRight } from 'lucide-react';
+import { Sparkles, LoaderCircle, ArrowUpRight, Users, TrendingUp } from 'lucide-react';
 import { getMatchPredictionSummary } from '@/ai/flows/get-match-prediction-summary';
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ type AIResult = {
     summary: string;
     mostConfidentPick: string;
     confidenceScore: number;
+    bothTeamsToScore: string;
+    overUnder2_5: string;
 }
 
 const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
@@ -57,6 +59,15 @@ export function AIInsight({ match }: AIInsightProps) {
       setLoading(false);
     }
   };
+
+  const bttsParts = result?.bothTeamsToScore?.split(' - ') ?? [];
+  const bttsPick = bttsParts[0] ?? '';
+  const bttsReason = bttsParts.length > 1 ? bttsParts.slice(1).join(' - ') : '';
+
+  const ouParts = result?.overUnder2_5?.split(' - ') ?? [];
+  const ouPick = ouParts[0] ?? '';
+  const ouReason = ouParts.length > 1 ? ouParts.slice(1).join(' - ') : '';
+
 
   return (
     <div className="space-y-4">
@@ -99,6 +110,29 @@ export function AIInsight({ match }: AIInsightProps) {
                     </div>
                 </CardContent>
             </Card>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <Card>
+                    <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Both Teams to Score?</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{bttsPick}</div>
+                        <p className="text-xs text-muted-foreground">{bttsReason}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Over/Under 2.5 Goals</CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{ouPick}</div>
+                         <p className="text-xs text-muted-foreground">{ouReason}</p>
+                    </CardContent>
+                </Card>
+            </div>
 
             <Alert className="border-accent">
               <Sparkles className="h-4 w-4 text-accent" />
