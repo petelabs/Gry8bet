@@ -3,7 +3,8 @@ import { mapSportsDBEventToMatch, mapSportsDBEventWithTeamDetailsToMatch } from 
 import { isAfter, parse } from 'date-fns';
 
 const API_KEY = process.env.NEXT_PUBLIC_THESPORTSDB_API_KEY;
-const API_URL = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
+// Updated to V2 API as per user's request. The key is part of the URL for v2.
+const API_URL = `https://www.thesportsdb.com/api/v2/json/${API_KEY}`;
 
 // Define a list of popular leagues to fetch data for
 const POPULAR_LEAGUES = [
