@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, ShieldCheck, LogOut, Settings, BookUser, FileText, User } from "lucide-react";
+import { Menu, ShieldCheck, LogOut, Settings, BookUser, FileText, User, BookText } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "../ui/sheet";
@@ -77,9 +77,15 @@ function SettingsNav() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Legal</DropdownMenuLabel>
+        <DropdownMenuLabel>App & Legal</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href="/recommendations">
+              <BookText className="mr-2 h-4 w-4" />
+              <span>Recommendations</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/terms-of-service">
               <FileText className="mr-2 h-4 w-4" />
@@ -102,7 +108,6 @@ function SettingsNav() {
 export function Header() {
   const navLinks = [
     { href: "/", label: "Matches" },
-    { href: "/recommendations", label: "Recommendations" },
   ];
 
   return (

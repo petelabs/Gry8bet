@@ -31,9 +31,8 @@ const POPULAR_LEAGUES = [
 
 async function fetchFromSportsDB<T>(endpoint: string, params: Record<string, string>): Promise<T | null> {
     if (!API_KEY || API_KEY === '123') {
-        const errorMessage = 'TheSportsDB API key is not configured or is using the default placeholder. The app will show no matches until this is configured in your hosting environment.';
-        console.warn(errorMessage);
-        return null;
+        const errorMessage = 'TheSportsDB API key is not configured. Please add NEXT_PUBLIC_THESPORTSDB_API_KEY to your environment variables.';
+        throw new Error(errorMessage);
     }
 
     const queryString = new URLSearchParams(params).toString();

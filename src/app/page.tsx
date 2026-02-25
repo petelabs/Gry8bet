@@ -75,54 +75,62 @@ export default function Home() {
     }, [toast, isPro]);
 
 
-    if (error) {
-         return (
-             <div className="container py-6 sm:py-8">
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>
-                       Could not load match data. {error}
-                    </AlertDescription>
-                </Alert>
-            </div>
-          );
-    }
-
-    if (isLoading || matches === null) {
-        return (
-            <div className="container py-6 sm:py-8">
+    const renderContent = () => {
+        if (isLoading || matches === null) {
+            return (
                 <div className="flex justify-center items-center py-24 text-muted-foreground bg-card rounded-lg border gap-4">
                     <LoaderCircle className="h-6 w-6 animate-spin" />
                     <h3 className="text-lg font-semibold text-foreground">
                         Loading upcoming matches...
                     </h3>
                 </div>
-            </div>
-        );
-    }
-    
-    if (matches.length === 0) {
-        return (
-            <div className="container py-6 sm:py-8">
+            );
+        }
+
+        if (error) {
+            return (
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error Loading Matches</AlertTitle>
+                    <AlertDescription>
+                        {error}
+                    </AlertDescription>
+                </Alert>
+            );
+        }
+        
+        if (matches.length === 0) {
+            return (
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
                     <h3 className="text-lg font-semibold text-foreground">No matches found.</h3>
                     <p className="mt-1 text-sm">There are no matches to display at this time. Please check back later.</p>
                 </div>
-                 <div className="mt-8">
-                    {!isPro && <ShareCard />}
-                </div>
-            </div>
-        );
-    }
+            );
+        }
 
-    const leagues = [...new Set(matches.map(match => match.league))].sort();
+        const leagues = [...new Set(matches.map(match => match.league))].sort();
+        return <MatchList matches={matches} leagues={leagues} />;
+    }
 
     return (
         <div className="container py-6 sm:py-8">
             <div className="space-y-8">
-                <MatchList matches={matches} leagues={leagues} />
-                {!isPro && (
+                 <div className="text-center">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Welcome to Gry8bet</h1>
+                    <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+                        Your #1 source for AI-powered football predictions and betting insights. Explore upcoming matches below.
+                    </p>
+                </div>
+
+                {renderContent()}
+
+                {!isPro && matches && matches.length === 0 && (
+                     <div className="mt-8">
+                        <ShareCard />
+                    </div>
+                )}
+                
+                {!isPro && matches && matches.length > 0 && (
                   <div className="grid md:grid-cols-2 gap-8">
                       <BetNowCard />
                       <ShareCard />
