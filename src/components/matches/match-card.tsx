@@ -75,7 +75,7 @@ export function MatchCard({ match }: MatchCardProps) {
           <div className="flex items-center justify-between gap-2 text-center">
             <div className="flex-1 flex flex-col items-center gap-2">
               <Image
-                src={match.homeTeam.logoUrl}
+                src={match.homeTeam.logoUrl || 'https://www.thesportsdb.com/images/shared/placeholders/football_placeholder.png'}
                 alt={`${match.homeTeam.name} logo`}
                 width={40}
                 height={40}
@@ -87,7 +87,7 @@ export function MatchCard({ match }: MatchCardProps) {
             <div className="font-bold text-xl sm:text-2xl text-muted-foreground">vs</div>
             <div className="flex-1 flex flex-col items-center gap-2">
               <Image
-                src={match.awayTeam.logoUrl}
+                src={match.awayTeam.logoUrl || 'https://www.thesportsdb.com/images/shared/placeholders/football_placeholder.png'}
                 alt={`${match.awayTeam.name} logo`}
                 width={40}
                 height={40}
