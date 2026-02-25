@@ -15,20 +15,21 @@ export function mapSportsDBEventToMatch(
   teamLogosMap: Map<string, { id: string, logoUrl: string }>
 ): Match {
   
-  const homeTeamInfo = teamLogosMap.get(event.strHomeTeam) || { id: event.idHomeTeam, logoUrl: 'https://www.thesportsdb.com/images/shared/placeholders/football_placeholder.png' };
-  const awayTeamInfo = teamLogosMap.get(event.strAwayTeam) || { id: event.idAwayTeam, logoUrl: 'https://www.thesportsdb.com/images/shared/placeholders/football_placeholder.png' };
+  const placeholderLogo = 'https://www.thesportsdb.com/images/shared/placeholders/football_placeholder.png';
+  const homeTeamInfo = teamLogosMap.get(event.strHomeTeam);
+  const awayTeamInfo = teamLogosMap.get(event.strAwayTeam);
     
   const homeTeam: Team = {
-    id: homeTeamInfo.id,
+    id: homeTeamInfo?.id || event.idHomeTeam,
     name: event.strHomeTeam,
-    logoUrl: homeTeamInfo.logoUrl,
+    logoUrl: homeTeamInfo?.logoUrl || placeholderLogo,
     logoImageHint: 'team logo',
   };
 
   const awayTeam: Team = {
-    id: awayTeamInfo.id,
+    id: awayTeamInfo?.id || event.idAwayTeam,
     name: event.strAwayTeam,
-    logoUrl: awayTeamInfo.logoUrl,
+    logoUrl: awayTeamInfo?.logoUrl || placeholderLogo,
     logoImageHint: 'team logo',
   };
   
