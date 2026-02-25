@@ -112,8 +112,8 @@ export default function Home() {
         if (matches.length === 0) {
             return (
                 <div className="text-center py-24 text-muted-foreground bg-card rounded-lg border">
-                    <h3 className="text-lg font-semibold text-foreground">No matches found.</h3>
-                    <p className="mt-1 text-sm">There are no matches to display at this time. Please check back later.</p>
+                    <h3 className="text-lg font-semibold text-foreground">No upcoming matches found.</h3>
+                    <p className="mt-1 text-sm">There are no new matches scheduled in the top leagues. Please check back later.</p>
                 </div>
             );
         }

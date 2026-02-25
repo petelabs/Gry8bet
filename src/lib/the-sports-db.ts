@@ -78,12 +78,10 @@ export async function getUpcomingEvents() {
         }
     }
 
-    // 2. Fetch events for the current season for each league
-    const currentYear = new Date().getFullYear();
-    const season = `${currentYear}-${currentYear + 1}`; // Handles European seasons like 2024-2025
-
-    const eventPromises = POPULAR_LEAGUES.map(league => 
-        fetchFromSportsDB<TheSportsDBEventsResponse>('eventsseason.php', { id: league.id, s: season })
+    // 2. Fetch upcoming events for each league
+    const eventPromises = POPULAR_LEAGUES.map(league =>
+        // Use eventsnextleague.php to get upcoming matches, which is often more friendly to free API keys
+        fetchFromSportsDB<TheSportsDBEventsResponse>('eventsnextleague.php', { id: league.id })
     );
     const eventResponses = await Promise.all(eventPromises);
 
@@ -100,9 +98,9 @@ export async function getUpcomingEvents() {
             // TheSportsDB times can be 'HH:mm:ss' or 'HH:mm'
             const timeFormat = event.strTime.length > 5 ? 'HH:mm:ss' : 'HH:mm';
             try {
-                // We just want to ensure the date is parsable before mapping
-                parse(`${event.dateEvent} ${event.strTime}`, `yyyy-MM-dd ${timeFormat}`, new Date());
-                return true; // Include all parsable events
+                const eventDate = parse(`${event.dateEvent} ${event.strTime}`, `yyyy-MM-dd ${timeFormat}`, new Date());
+                // Only include matches that are in the future
+                return isAfter(eventDate, new Date());
             } catch (e) {
                 console.warn(`Could not parse date for event ${event.idEvent}: ${event.dateEvent} ${event.strTime}`);
                 return false;
