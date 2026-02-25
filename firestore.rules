@@ -1,60 +1,26 @@
-/**
- * @fileoverview Firestore Security Rules for the Gry8bet Application
- * @version 1.2
- *
- * @description
- * This ruleset establishes a security model for a public-facing application
- * that displays football match data. It uses a client-side caching strategy
- * where data is publicly readable and updated periodically by authenticated users.
- *
- * @philosophy
- * Public Read, Authenticated Write: All match and system data is readable by
- * any user to ensure the app is fast and functional for everyone. Write
-* operations, which trigger data syncs from an external API, are restricted
-* to authenticated users to prevent abuse and manage API costs.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * Reusable function to check if a user is authenticated.
+     * Returns true if a user is signed in.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // -------------------------------------------------------------------------
-    // Public Data Collections: /matches, /predictions, etc.
-    // -------------------------------------------------------------------------
     /**
-     * @description
-     *   Manages all public football data (matches, predictions, teams, leagues).
-     *   This data is publicly readable. Writes are restricted to authenticated
-     *   users, who are trusted to trigger client-side data caching from the API.
+     * PUBLIC DATA
+     * All collections that are publicly readable but have restricted writes.
+     * This includes match data, AI predictions, and system status needed for caching.
      */
-    match /{collection}/{docId}
-      where collection in ['leagues', 'teams', 'matches', 'predictions'] {
-      // Allow anyone to read the data.
+    match /{collection}/{docId} where collection in ['matches', 'predictions', 'system', 'leagues', 'teams'] {
+      // Allow anyone to read data for a fast, public-facing app.
       allow get, list: if true;
-      // Only allow authenticated users to write (cache) data.
+      
+      // Only allow authenticated users to write data (i.e., trigger a cache update).
+      // This prevents abuse of the external sports API.
       allow write: if isSignedIn();
-    }
-    
-    // -------------------------------------------------------------------------
-    // System Metadata Collection: /system
-    // -------------------------------------------------------------------------
-    /**
-     * @description
-     *   Manages internal system metadata, like the timestamp for the last data sync.
-     *   This data MUST be readable by everyone (even logged-out users) so the app
-     *   can determine if it needs to fetch new data from the sports API.
-     */
-    match /system/{docId} {
-        // CRITICAL: Anyone can read the sync status for the caching logic.
-        allow get, list: if true;
-        // Only signed-in users can write, which happens during a data sync.
-        allow write: if isSignedIn();
     }
   }
 }
