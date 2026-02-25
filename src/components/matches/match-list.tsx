@@ -22,10 +22,10 @@ import { ProModal } from '@/components/pro-modal';
 interface MatchListProps {
   matches: Match[];
   leagues: string[];
-  highConfidencePicks: Set<string>;
+  highConfidencePicks?: Set<string>;
 }
 
-export function MatchList({ matches, leagues, highConfidencePicks }: MatchListProps) {
+export function MatchList({ matches, leagues, highConfidencePicks = new Set() }: MatchListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('all');
   

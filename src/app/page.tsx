@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { getUpcomingEvents } from '@/lib/the-sports-db';
-import type { Match, Prediction } from '@/lib/types';
+import type { Match } from '@/lib/types';
 import { MatchList } from '@/components/matches/match-list';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, LoaderCircle } from 'lucide-react';
@@ -10,8 +10,6 @@ import { ShareCard } from '@/components/sharing/share-card';
 import { BetNowCard } from '@/components/betting/bet-now-card';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, writeBatch, serverTimestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { useProPlan } from '@/hooks/use-pro-plan';
 
 export default function Home() {
@@ -19,61 +17,25 @@ export default function Home() {
     const AFFILIATE_URL = 'https://moy.auraodin.com/redirect.aspx?pid=166680&bid=1733';
 
     // --- State Management ---
-    const firestore = useFirestore();
     const { isPro } = useProPlan();
     const [matches, setMatches] = useState<Match[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // --- Firestore References ---
-    const matchesCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'matches') : null, [firestore]);
-    const predictionsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'predictions') : null, [firestore]);
-    const syncStateRef = useMemoFirebase(() => firestore ? doc(firestore, 'system', 'syncState') : null, [firestore]);
-    
-    // Subscribe to predictions for high-confidence picks
-    const { data: cachedPredictions } = useCollection<Prediction>(predictionsCollectionRef);
-    
-    // Effect to load matches from cache or API
+    // Effect to load matches directly from the API
     useEffect(() => {
-        if (!firestore || !matchesCollectionRef || !syncStateRef) {
-            return;
-        }
-
         const loadMatches = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                // 1. Try to get matches from Firestore cache first, ordered by kickoff time
-                const q = query(matchesCollectionRef, orderBy("kickOff", "asc"));
-                const matchesSnapshot = await getDocs(q);
+                console.log("Fetching matches directly from API...");
+                const apiMatches = await getUpcomingEvents();
 
-                if (!matchesSnapshot.empty) {
-                    console.log("Loading matches from Firestore cache.");
-                    const cachedMatches = matchesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Match));
-                    setMatches(cachedMatches);
+                if (apiMatches && apiMatches.length > 0) {
+                    setMatches(apiMatches);
                 } else {
-                    // 2. If cache is empty, fetch from API
-                    console.log("Cache is empty. Fetching matches from API.");
-                    const apiMatches = await getUpcomingEvents();
-
-                    if (apiMatches && apiMatches.length > 0) {
-                        setMatches(apiMatches);
-                        // 3. Fire-and-forget: update the cache for next time
-                        console.log("Syncing new matches to Firestore in the background...");
-                        const batch = writeBatch(firestore);
-                        apiMatches.forEach(match => {
-                            const matchDocRef = doc(firestore, 'matches', match.id);
-                            // Ensure the object is a plain JS object for Firestore
-                            const serializableMatch = JSON.parse(JSON.stringify(match));
-                            batch.set(matchDocRef, serializableMatch);
-                        });
-                        batch.set(syncStateRef, { lastSync: serverTimestamp() });
-                        await batch.commit();
-                        console.log("Background sync complete.");
-                    } else {
-                        // API returned no matches
-                        setMatches([]);
-                    }
+                    // API returned no matches
+                    setMatches([]);
                 }
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to load match data.';
@@ -87,7 +49,7 @@ export default function Home() {
 
         loadMatches();
         // This effect should run once on component mount
-    }, [firestore, matchesCollectionRef, syncStateRef]);
+    }, []);
 
 
     // Effect for one-time affiliate ad
@@ -112,15 +74,6 @@ export default function Home() {
         }
     }, [toast, isPro]);
 
-
-    const highConfidencePicks = useMemo(() => {
-        if (!cachedPredictions) return new Set<string>();
-        return new Set(
-            cachedPredictions
-                .filter(p => p.confidenceScore >= 85)
-                .map(p => p.id)
-        );
-    }, [cachedPredictions]);
 
     if (error) {
          return (
@@ -168,7 +121,7 @@ export default function Home() {
     return (
         <div className="container py-6 sm:py-8">
             <div className="space-y-8">
-                <MatchList matches={matches} leagues={leagues} highConfidencePicks={highConfidencePicks} />
+                <MatchList matches={matches} leagues={leagues} />
                 {!isPro && (
                   <div className="grid md:grid-cols-2 gap-8">
                       <BetNowCard />
