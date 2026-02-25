@@ -92,16 +92,16 @@ export async function getUpcomingEvents() {
         }
     }
 
-    // 3. Filter for upcoming events, map to the internal Match type, and sort
-    const now = new Date();
+    // 3. Filter for events with a valid date, map to the internal Match type, and sort
     const matches = allEvents
         .filter(event => {
             if (!event.dateEvent || !event.strTime) return false;
             // TheSportsDB times can be 'HH:mm:ss' or 'HH:mm'
             const timeFormat = event.strTime.length > 5 ? 'HH:mm:ss' : 'HH:mm';
             try {
-                const parsedDate = parse(`${event.dateEvent} ${event.strTime}`, `yyyy-MM-dd ${timeFormat}`, new Date());
-                return isAfter(parsedDate, now);
+                // We just want to ensure the date is parsable before mapping
+                parse(`${event.dateEvent} ${event.strTime}`, `yyyy-MM-dd ${timeFormat}`, new Date());
+                return true; // Include all parsable events
             } catch (e) {
                 console.warn(`Could not parse date for event ${event.idEvent}: ${event.dateEvent} ${event.strTime}`);
                 return false;
