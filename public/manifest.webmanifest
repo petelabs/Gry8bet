@@ -1,10 +1,10 @@
 {
-  "name": "Gry8bet | AI-Powered Football Predictions",
+  "name": "Gry8bet",
   "short_name": "Gry8bet",
-  "description": "Get expert football predictions with Gry8bet. Our AI analyzes match data, stats, and expert insights to give you reliable betting tips, confident picks, and detailed analysis for all major leagues.",
+  "description": "AI-Powered Football Predictions & Betting Insights",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f1f5f9",
+  "background_color": "#ffffff",
   "theme_color": "#2E4E8C",
   "icons": [
     {
@@ -15,6 +15,11 @@
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
     }
   ]
